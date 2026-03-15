@@ -3,6 +3,7 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { CARS } from '../constants';
 import { useRentalCalendar } from '../hooks/useRentalCalendar';
 import { Car } from '../types';
+import Navbar from '../components/Navbar';
 
 const ALL_CARS = CARS;
 
@@ -68,10 +69,9 @@ export default function Book() {
       if (features.length && !features.every(f => c.feats?.includes(f))) return false;
       
       const p = getCarPrice(c);
-      // Se p === null, mantemos como 0 temporariamente para o filtro (preservando o comportamento visual original "Troque a franquia")
-      const priceToCompare = p ?? 0;
+      if (p === null) return false; // REMOVER CARROS SEM PREÇO PARA ESTA FRANQUIA
       
-      if (priceToCompare > maxPrice && priceToCompare !== 0) return false;
+      if (p > maxPrice) return false;
       return true;
     });
 
@@ -85,7 +85,14 @@ export default function Book() {
     });
 
     return filtered;
-  }, [search, categories, features, maxPrice, sort, plan, location, mileageFranchise]); // BUG CORRIGIDO: mileageFranchise adicionado
+  }, [search, categories, features, maxPrice, sort, plan, location, mileageFranchise]);
+
+  // UX: Atualizar carro selecionado se ele for filtrado
+  useEffect(() => {
+    if (filteredCars.length > 0 && !filteredCars.find(c => c.id === selectedCarId)) {
+        setSelectedCarId(filteredCars[0].id as number);
+    }
+  }, [filteredCars, selectedCarId]);
 
   const toggleCategory = (cat: string) => {
     setCategories(prev => prev.includes(cat) ? prev.filter(c => c !== cat) : [...prev, cat]);
@@ -107,11 +114,49 @@ export default function Book() {
     document.title = "FlexLoc — Reservar Veículo";
   }, []);
 
-  const timeOptions = [];
-  for (let h = 9; h <= 17; h++) {
-    timeOptions.push(`${String(h).padStart(2, '0')}:00`);
-    if (h < 17) timeOptions.push(`${String(h).padStart(2, '0')}:30`);
-  }
+  const getTimeOptions = (dateStr: string) => {
+    const options = [];
+    if (!dateStr) {
+      for (let h = 9; h <= 17; h++) {
+        options.push(`${String(h).padStart(2, '0')}:00`);
+        if (h < 17) options.push(`${String(h).padStart(2, '0')}:30`);
+      }
+      return options;
+    }
+    
+    const date = new Date(dateStr + 'T12:00:00');
+    const isSaturday = !isNaN(date.getTime()) && date.getDay() === 6;
+    const maxHour = isSaturday ? 12 : 17;
+
+    for (let h = 9; h <= maxHour; h++) {
+      options.push(`${String(h).padStart(2, '0')}:00`);
+      if (h < maxHour) options.push(`${String(h).padStart(2, '0')}:30`);
+    }
+    return options;
+  };
+
+  const startTimeOptions = getTimeOptions(dateStart);
+  const endTimeOptions = getTimeOptions(dateEnd);
+
+  useEffect(() => {
+    if (dateStart) {
+      const d = new Date(dateStart + 'T12:00:00');
+      if (d.getDay() === 6 && parseInt(timeStart.split(':')[0]) > 12) {
+        setTimeStart('12:00');
+      }
+    }
+  }, [dateStart, timeStart]);
+
+  useEffect(() => {
+    if (dateEnd) {
+      const d = new Date(dateEnd + 'T12:00:00');
+      if (d.getDay() === 6 && parseInt(timeEnd.split(':')[0]) > 12) {
+        setTimeEnd('12:00');
+      }
+    }
+  }, [dateEnd, timeEnd]);
+
+
 
   const calculateTotals = () => {
     let days = totalDays;
@@ -186,21 +231,7 @@ Aguardo retorno para finalizar!`;
     <div className="text-white min-h-screen flex flex-col selection:bg-primary selection:text-black bg-black">
       <div id="spotlight"></div>
       
-      <header className="fixed top-0 left-0 right-0 z-50 glass-panel border-b-0" style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-        {/* HTML do header idêntico */}
-        <div className="max-w-[1600px] mx-auto px-6 h-16 flex items-center justify-between">
-          <Link to="/" className="hover:opacity-80 transition-opacity">
-            <img src="/images/logo.png" decoding="async" alt="FlexLoc" className="h-7 w-auto object-contain" />
-          </Link>
-          <nav className="hidden md:flex items-center gap-8">
-            <Link className="text-[11px] font-bold uppercase tracking-widest text-white/60 hover:text-primary transition-colors" to="/#fleet">Frota</Link>
-            <Link className="text-[11px] font-bold uppercase tracking-widest text-white/60 hover:text-primary transition-colors" to="/">Contato</Link>
-          </nav>
-          <Link to="/" className="flex items-center gap-2 text-sm text-white/50 hover:text-white transition-colors">
-            <span className="material-symbols-outlined text-[18px]">arrow_back</span> Voltar
-          </Link>
-        </div>
-      </header>
+      <Navbar />
 
       <main className="flex-grow pt-20 min-h-screen" style={{ background: 'radial-gradient(ellipse at 50% -10%,#151508 0%,#050505 40%,#000000 100%)' }}>
         <div className="max-w-[1600px] mx-auto px-4 py-6 flex flex-col lg:flex-row gap-5 items-start">
@@ -219,6 +250,7 @@ Aguardo retorno para finalizar!`;
                 <div className="relative">
                   <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-[16px]">search</span>
                   <input type="text" placeholder="Buscar modelo..." value={search} onChange={e => setSearch(e.target.value)}
+                    title="Buscar modelo de veículo"
                     className="w-full pl-9 pr-3 py-2 bg-white/[0.04] border border-white/5 rounded-lg text-xs text-white placeholder-gray-600 focus:outline-none focus:border-primary/40 transition-colors" />
                 </div>
               </div>
@@ -282,6 +314,7 @@ Aguardo retorno para finalizar!`;
               <div className="flex items-center gap-2">
                 <span className="text-sm text-gray-600 uppercase tracking-[0.15em]">Ordenar:</span>
                 <select value={sort} onChange={e => setSort(e.target.value)}
+                  title="Ordenar lista de veículos"
                   className="bg-white/5 border border-white/10 text-xs text-white rounded-lg px-3 py-1.5 focus:outline-none focus:border-primary/40">
                   <option value="price-asc">Menor Preço</option>
                   <option value="price-desc">Maior Preço</option>
@@ -301,24 +334,19 @@ Aguardo retorno para finalizar!`;
                   priceLabel = 'Por dia';
                   unavailable = !c.availablePF;
                 } else {
-                  const pricing = c.pricingApp?.[location as 'fsa' | 'ssa'];
+                   const pricing = c.pricingApp?.[location as 'fsa' | 'ssa'];
                   const price = pricing?.[mileageFranchise];
-                  displayPrice = price ?? '-';
+                  displayPrice = price ?? 'Indisponível';
                   
                   const hasAnyPricing = pricing && (pricing.k3 !== null || pricing.k6 !== null || pricing.free !== null);
-                  unavailable = !hasAnyPricing;
-                  
-                  const isFranchiseUnavailable = pricing && pricing[mileageFranchise] === null;
-                  if (isFranchiseUnavailable && !unavailable) {
-                    displayPrice = 'Troque a franquia';
-                  }
+                  unavailable = !hasAnyPricing || price === null;
                 }
 
                 const isSelected = selectedCarId === c.id;
 
                 return (
                   <div key={c.id} onClick={() => !unavailable && setSelectedCarId(c.id as number)}
-                    className={`group car-card rounded-3xl p-6 flex flex-col relative transition-all duration-300 ${unavailable ? 'opacity-40 pointer-events-none' : 'cursor-pointer hover:shadow-2xl hover:shadow-primary/10'} ${isSelected ? 'bg-white/[0.06] border border-primary/30' : 'bg-white/[0.03] border border-white/5'}`}>
+                    className={`group car-card rounded-3xl p-6 flex flex-col relative transition-all duration-300 ${unavailable ? 'opacity-30 grayscale pointer-events-none' : 'cursor-pointer hover:shadow-2xl hover:shadow-primary/10'} ${isSelected ? 'bg-white/[0.06] border border-primary/30' : 'bg-white/[0.03] border border-white/5'}`}>
                     <div className="absolute -right-10 -top-10 w-40 h-40 bg-primary/5 rounded-full blur-3xl pointer-events-none transition-opacity group-hover:opacity-100 opacity-0"></div>
                     <div className="relative h-48 w-full -mt-4 mb-4 flex items-center justify-center z-10">
                       <img src={c.img || c.image} decoding="async" loading="lazy" alt={c.name} className="car-img object-contain w-full h-full transition-transform duration-500 group-hover:scale-105" />
@@ -472,7 +500,7 @@ Aguardo retorno para finalizar!`;
                     {isTimeStartOpen && (
                       <div className="absolute z-50 w-full mt-2 bg-[#0A0A0A] border border-white/10 rounded-2xl shadow-2xl max-h-48 overflow-y-auto custom-scrollbar">
                         <ul className="p-2 text-sm font-medium text-gray-400 flex flex-col gap-1">
-                          {timeOptions.map(t => (
+                          {startTimeOptions.map(t => (
                             <li key={t}>
                               <button type="button" onClick={() => { setTimeStart(t); setIsTimeStartOpen(false); }}
                                 className="w-full text-center px-2 py-2 hover:text-primary hover:bg-white/5 rounded-lg transition-all duration-150 cursor-pointer">
@@ -514,7 +542,7 @@ Aguardo retorno para finalizar!`;
                     {isTimeEndOpen && (
                       <div className="absolute z-50 w-full mt-2 bg-[#0A0A0A] border border-white/10 rounded-2xl shadow-2xl max-h-48 overflow-y-auto custom-scrollbar">
                         <ul className="p-2 text-sm font-medium text-gray-400 flex flex-col gap-1">
-                          {timeOptions.map(t => (
+                          {endTimeOptions.map(t => (
                             <li key={t}>
                               <button type="button" onClick={() => { setTimeEnd(t); setIsTimeEndOpen(false); }}
                                 className="w-full text-center px-2 py-2 hover:text-primary hover:bg-white/5 rounded-lg transition-all duration-150 cursor-pointer">

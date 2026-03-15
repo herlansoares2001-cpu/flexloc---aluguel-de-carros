@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { CARS, TESTIMONIALS } from '../constants';
 import { useRentalCalendar } from '../hooks/useRentalCalendar';
-import Calendar from '../components/Calendar';
+import Navbar from '../components/Navbar';
 
 export default function Home() {
   const navigate = useNavigate();
@@ -24,12 +24,57 @@ export default function Home() {
     dateEndRef,
     dateStart,
     dateEnd,
+    setDateStart,
+    setDateEnd,
     error,
     setError,
     warning,
     validateDates,
     totalDays
-  } = useRentalCalendar(plan, '', '', true);
+  } = useRentalCalendar(plan, '', '', false);
+
+  const getTimeOptions = (dateStr: string) => {
+    const options = [];
+    if (!dateStr) {
+      // Fallback para opções padrão
+      for (let h = 9; h <= 17; h++) {
+        options.push(`${String(h).padStart(2, '0')}:00`);
+        if (h < 17) options.push(`${String(h).padStart(2, '0')}:30`);
+      }
+      return options;
+    }
+    
+    const date = new Date(dateStr + 'T12:00:00');
+    const isSaturday = !isNaN(date.getTime()) && date.getDay() === 6;
+    const maxHour = isSaturday ? 12 : 17;
+
+    for (let h = 9; h <= maxHour; h++) {
+      options.push(`${String(h).padStart(2, '0')}:00`);
+      if (h < maxHour) options.push(`${String(h).padStart(2, '0')}:30`);
+    }
+    return options;
+  };
+
+  const startTimeOptions = getTimeOptions(dateStart);
+  const endTimeOptions = getTimeOptions(dateEnd);
+
+  useEffect(() => {
+    if (dateStart) {
+      const d = new Date(dateStart + 'T12:00:00');
+      if (d.getDay() === 6 && parseInt(timeStart.split(':')[0]) > 12) {
+        setTimeStart('12:00');
+      }
+    }
+  }, [dateStart, timeStart]);
+
+  useEffect(() => {
+    if (dateEnd) {
+      const d = new Date(dateEnd + 'T12:00:00');
+      if (d.getDay() === 6 && parseInt(timeEnd.split(':')[0]) > 12) {
+        setTimeEnd('12:00');
+      }
+    }
+  }, [dateEnd, timeEnd]);
 
   useEffect(() => {
     document.title = "FlexLoc — Aluguel de Carros Inteligente e Sem Burocracia";
@@ -103,48 +148,12 @@ export default function Home() {
     navigate(`/book?${params.toString()}`);
   };
 
-  const timeOptions = [];
-  for (let h = 9; h <= 17; h++) {
-    timeOptions.push(`${String(h).padStart(2, '0')}:00`);
-    if (h < 17) timeOptions.push(`${String(h).padStart(2, '0')}:30`);
-  }
+
 
   return (
     <>
       <div id="spotlight"></div>
-      <nav className="absolute top-0 w-full z-50 border-b border-white/5 bg-transparent">
-        <div className="max-w-7xl mx-auto px-6 lg:px-8">
-          <div className="flex items-center justify-between h-20">
-            <div className="flex items-center group cursor-pointer">
-              <img src="/images/logo.png" decoding="async" alt="Flexloc Logo" className="h-6 md:h-8 w-auto object-contain transition-opacity duration-300 group-hover:opacity-80" />
-            </div>
-            <div className="hidden md:flex items-center gap-10">
-              <a className="text-[11px] font-bold uppercase tracking-widest text-white/60 hover:text-primary transition-all duration-300 hover:tracking-[0.25em]" href="#fleet">Frota</a>
-              <a className="text-[11px] font-bold uppercase tracking-widest text-white/60 hover:text-primary transition-all duration-300 hover:tracking-[0.25em]" href="#">Sobre</a>
-              <a className="text-[11px] font-bold uppercase tracking-widest text-white/60 hover:text-primary transition-all duration-300 hover:tracking-[0.25em]" href="#">Contato</a>
-            </div>
-            <div className="flex items-center">
-              <button 
-                className="md:hidden text-white p-2 hover:text-primary transition-colors"
-                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                aria-label="Menu Mobile"
-                aria-expanded={isMobileMenuOpen}
-              >
-                <span className="material-symbols-outlined font-light">{isMobileMenuOpen ? 'close' : 'menu'}</span>
-              </button>
-            </div>
-          </div>
-        </div>
-        
-        {/* Mobile Menu */}
-        <div className={`md:hidden absolute top-20 left-0 w-full bg-background-dark/95 backdrop-blur-xl border-b border-white/10 transition-all duration-300 overflow-hidden ${isMobileMenuOpen ? 'max-h-64 opacity-100' : 'max-h-0 opacity-0'}`}>
-          <div className="flex flex-col px-6 py-4 gap-4">
-            <a className="text-sm font-bold uppercase tracking-widest text-white/80 hover:text-primary transition-colors" href="#fleet" onClick={() => setIsMobileMenuOpen(false)}>Frota</a>
-            <a className="text-sm font-bold uppercase tracking-widest text-white/80 hover:text-primary transition-colors" href="#" onClick={() => setIsMobileMenuOpen(false)}>Sobre</a>
-            <a className="text-sm font-bold uppercase tracking-widest text-white/80 hover:text-primary transition-colors" href="#" onClick={() => setIsMobileMenuOpen(false)}>Contato</a>
-          </div>
-        </div>
-      </nav>
+      <Navbar transparent />
 
       <main className="relative flex-grow flex items-center justify-center min-h-[90vh] lg:min-h-[95vh] overflow-hidden bg-black">
         <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
@@ -207,19 +216,19 @@ export default function Home() {
                     <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest ml-4 opacity-70" id="tipo-contrato-label">Tipo de Contrato</label>
                     <div className="flex p-1.5 bg-black/40 rounded-2xl border border-white/5 backdrop-blur-md shadow-inner" role="group" aria-labelledby="tipo-contrato-label">
                       <button type="button" onClick={() => handleTipoChange('app')}
-                        aria-pressed={tipo === 'app'}
+                        aria-pressed={tipo === 'app' ? "true" : "false"}
                         className={`flex-1 py-3 px-4 rounded-xl text-[11px] uppercase tracking-widest transition-all duration-500 ${tipo === 'app' ? 'font-black bg-primary text-background-dark shadow-xl shadow-primary/20' : 'font-bold text-gray-500 hover:text-white'}`}>
                         Motorista de App
                       </button>
                       <button type="button" onClick={() => handleTipoChange('normal')}
-                        aria-pressed={tipo === 'normal'}
+                        aria-pressed={tipo === 'normal' ? "true" : "false"}
                         className={`flex-1 py-3 px-4 rounded-xl text-[11px] uppercase tracking-widest transition-all duration-500 ${tipo === 'normal' ? 'font-black bg-primary text-background-dark shadow-xl shadow-primary/20' : 'font-bold text-gray-500 hover:text-white'}`}>
                         Pessoa Física
                       </button>
                     </div>
                   </div>
 
-                  <div className="flex flex-col gap-5">
+                  <div className="flex flex-col gap-5 relative">
                     <div className="space-y-2 relative">
                       <label htmlFor="location-btn" className="text-[10px] font-bold text-gray-500 uppercase tracking-widest ml-4 opacity-70">Local de Retirada</label>
                       <div className="relative w-full">
@@ -273,7 +282,6 @@ export default function Home() {
                             <input ref={dateStartRef}
                               id="date-start"
                               readOnly
-                              onClick={() => setIsCalendarOpen(!isCalendarOpen)}
                               className="block w-full pl-11 pr-2 py-4 bg-white/[0.05] border border-white/10 hover:border-primary/50 hover:bg-white/[0.08] rounded-2xl text-white placeholder-gray-500 focus:outline-none transition-all text-xs font-bold tracking-wide cursor-pointer"
                               type="text" placeholder="Escolha a data" />
                           </div>
@@ -293,7 +301,7 @@ export default function Home() {
                             {isTimeStartOpen && (
                               <div className="absolute z-50 w-full mt-2 bg-black/80 border border-white/10 rounded-2xl shadow-2xl backdrop-blur-2xl max-h-48 overflow-y-auto custom-scrollbar">
                                 <ul className="p-2 text-sm font-medium text-gray-400 flex flex-col gap-1">
-                                  {timeOptions.map(t => (
+                                  {startTimeOptions.map(t => (
                                     <li key={t}>
                                       <button type="button" onClick={() => { setTimeStart(t); setIsTimeStartOpen(false); }}
                                         className="w-full text-center px-2 py-2 hover:text-primary hover:bg-white/5 rounded-lg transition-all duration-150 cursor-pointer">
@@ -321,7 +329,6 @@ export default function Home() {
                             <input ref={dateEndRef}
                               id="date-end"
                               readOnly
-                              onClick={() => setIsCalendarOpen(!isCalendarOpen)}
                               className="block w-full pl-11 pr-2 py-4 bg-white/[0.05] border border-white/10 hover:border-primary/50 hover:bg-white/[0.08] rounded-2xl text-white placeholder-gray-500 focus:outline-none transition-all text-xs font-bold tracking-wide cursor-pointer"
                               type="text" placeholder="Escolha a data" />
                           </div>
@@ -341,7 +348,7 @@ export default function Home() {
                             {isTimeEndOpen && (
                               <div className="absolute z-50 w-full mt-2 bg-black/80 border border-white/10 rounded-2xl shadow-2xl backdrop-blur-2xl max-h-48 overflow-y-auto custom-scrollbar">
                                 <ul className="p-2 text-sm font-medium text-gray-400 flex flex-col gap-1">
-                                  {timeOptions.map(t => (
+                                  {endTimeOptions.map(t => (
                                     <li key={t}>
                                       <button type="button" onClick={() => { setTimeEnd(t); setIsTimeEndOpen(false); }}
                                         className="w-full text-center px-2 py-2 hover:text-primary hover:bg-white/5 rounded-lg transition-all duration-150 cursor-pointer">
@@ -357,42 +364,13 @@ export default function Home() {
                       </div>
                     </div>
 
-                    {isCalendarOpen && (
-                      <div className="absolute z-[60] left-0 right-0 top-full mt-2 lg:-left-4 lg:-right-4 animate-fade-in">
-                        <Calendar
-                          initialMonth={new Date()}
-                          weekStartsOn={1}
-                          selectedStart={dateStart}
-                          selectedEnd={dateEnd}
-                          onRangeSelect={(start, end) => {
-                            if (dateStartRef.current) {
-                              (dateStartRef.current as HTMLInputElement).value = start || '';
-                              dateStartRef.current.dispatchEvent(new Event('input', { bubbles: true }));
-                            }
-                            if (dateEndRef.current) {
-                              (dateEndRef.current as HTMLInputElement).value = end || '';
-                              dateEndRef.current.dispatchEvent(new Event('input', { bubbles: true }));
-                            }
-                            if (start && end) {
-                              // Opcional: fechar após selecionar o intervalo
-                              // setIsCalendarOpen(false);
-                            }
-                          }}
-                        />
-                        <button 
-                          onClick={() => setIsCalendarOpen(false)}
-                          className="w-full mt-2 py-2 bg-white/5 hover:bg-white/10 rounded-xl text-[10px] font-black uppercase tracking-widest text-gray-400 transition-all backdrop-blur-md"
-                        >
-                          Fechar Calendário
-                        </button>
-                      </div>
-                    )}
-
                     <button onClick={goToBook}
                       className="w-full mt-4 py-5 bg-primary text-background-dark text-sm font-black uppercase tracking-[0.25em] rounded-2xl hover:bg-white hover:text-black transition-all duration-500 shadow-[0_20px_40px_rgba(255,217,0,0.3)] flex items-center justify-center gap-3 group active:scale-[0.97]">
                       <span>Alugar Agora</span>
                       <span className="material-symbols-outlined text-xl group-hover:translate-x-2 transition-transform">arrow_right_alt</span>
                     </button>
+                    
+
                     
                     {/* Visual Summary and Messaging */}
                     {dateStart && dateEnd && (

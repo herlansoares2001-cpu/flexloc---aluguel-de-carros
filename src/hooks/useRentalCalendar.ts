@@ -51,16 +51,21 @@ export function useRentalCalendar(plan: 'motorista' | 'pf', defaultStart = '', d
       if (typeof fpEnd.current.set === 'function') {
         fpEnd.current.set('minDate', minEnd);
         
-        // CORREÇÃO: Removido o bloqueio de domingo (getDay() === 0)
-        const disableFunctions: Array<(date: Date) => boolean> = [];
+        const disableFunctions: Array<(date: Date) => boolean> = [
+          function(date: Date) { return date.getDay() === 0; }
+        ];
 
         if (currentPlan === 'motorista') {
           if (startMidnight) {
             disableFunctions.push(function(date: Date) {
               const dateMidnight = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-              // CORREÇÃO: Lógica inclusiva (+1)
               const diffDays = Math.round((dateMidnight.getTime() - startMidnight.getTime()) / 86400000) + 1;
-              return diffDays < 7 || diffDays % 7 !== 0;
+              
+              // Permitir ciclos de 7 ou 8 se o 7 cair no domingo
+              const isCycleOf7 = diffDays % 7 === 0;
+              const isDay8BecauseSunday = diffDays === 8 && new Date(dateMidnight.getTime() - 86400000).getDay() === 0;
+
+              return diffDays < 7 || (!isCycleOf7 && !isDay8BecauseSunday);
             });
           } else {
             disableFunctions.push(function(date: Date) {
@@ -102,8 +107,13 @@ export function useRentalCalendar(plan: 'motorista' | 'pf', defaultStart = '', d
       }
 
       if (isInvalid) {
-        // CORREÇÃO: Ajustar sugestão subtraindo 1 dia
         let suggestedEnd = new Date(startMidnight.getTime() + (suggestedDays - 1) * 86400000);
+        
+        // Se a sugestão cair no domingo, avançar para segunda
+        if (suggestedEnd.getDay() === 0) {
+            suggestedEnd = new Date(suggestedEnd.getTime() + 86400000);
+        }
+
         try {
           if (typeof fpEnd.current.setDate === 'function') {
             fpEnd.current.setDate(suggestedEnd, true);
@@ -127,7 +137,11 @@ export function useRentalCalendar(plan: 'motorista' | 'pf', defaultStart = '', d
         maxDate: maxBoundary,
         locale: Portuguese,
         disableMobile: true,
-        disable: [], // CORREÇÃO: Removido bloqueio de domingo
+        disable: [
+          function(date: Date) {
+            return date.getDay() === 0;
+          }
+        ],
         defaultDate: defaultStart ? new Date(defaultStart + 'T12:00:00') : undefined,
         onChange: (selectedDates) => {
           if (selectedDates.length > 0) {
@@ -169,7 +183,11 @@ export function useRentalCalendar(plan: 'motorista' | 'pf', defaultStart = '', d
         maxDate: maxBoundary,
         locale: Portuguese,
         disableMobile: true,
-        disable: [], // CORREÇÃO: Removido bloqueio de domingo
+        disable: [
+          function(date: Date) {
+            return date.getDay() === 0;
+          }
+        ],
         defaultDate: defaultEnd ? new Date(defaultEnd + 'T12:00:00') : undefined,
         onChange: (selectedDates) => {
           if (selectedDates.length > 0) {
@@ -254,6 +272,8 @@ export function useRentalCalendar(plan: 'motorista' | 'pf', defaultStart = '', d
     dateEndRef,
     dateStart,
     dateEnd,
+    setDateStart,
+    setDateEnd,
     error,
     setError,
     warning,

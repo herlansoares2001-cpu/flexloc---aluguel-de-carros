@@ -29,25 +29,42 @@ export function validateRental(params: RentalValidationParams): ValidationResult
     return { isValid: false, error: 'A data de devolução deve ser posterior à data de retirada.' };
   }
 
-  // ALERTA DE RISCO: Validação de Domingo comentada para permitir ciclos de 7 dias inclusivos iniciando na Segunda.
-  // if (start.getDay() === 0 || end.getDay() === 0) {
-  //   return { isValid: false, error: 'A locadora não funciona aos domingos. Não permitimos retirada ou devolução nesse dia.' };
-  // }
+  // 1. Bloqueio absoluto aos Domingos
+  if (start.getDay() === 0 || end.getDay() === 0) {
+    return { isValid: false, error: 'A locadora não funciona aos domingos. Não permitimos retirada ou devolução nesse dia.' };
+  }
 
+  // 2. Bloqueio de horário aos Sábados (Retirada)
+  if (start.getDay() === 6 && timeStart) {
+    const [hours, minutes] = timeStart.split(':').map(Number);
+    if (hours > 12 || (hours === 12 && minutes > 0)) {
+      return { isValid: false, error: 'Aos sábados, a retirada deve ocorrer até as 12:00.' };
+    }
+  }
+
+  // 3. Bloqueio de horário aos Sábados (Devolução)
   if (end.getDay() === 6 && timeEnd) {
     const [hours, minutes] = timeEnd.split(':').map(Number);
     if (hours > 12 || (hours === 12 && minutes > 0)) {
-      return { isValid: false, error: 'Sábados a devolução deve ocorrer até 12:00.' };
+      return { isValid: false, error: 'Aos sábados, a devolução deve ocorrer até as 12:00.' };
     }
   }
 
   const diffTime = Math.abs(end.getTime() - start.getTime());
-  // CORREÇÃO: Matemática Inclusiva (+1 dia)
   const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24)) + 1;
 
   if (plan === 'motorista') {
+    // Solução para o conflito de ciclo de 7 dias vs Domingo:
+    // Se o aluguel tiver 8 dias e o 7º dia foi um domingo, permitimos.
+    const isCycleOf7 = diffDays % 7 === 0;
+    const isDay8BecauseSunday = diffDays === 8 && new Date(end.getTime() - 86400000).getDay() === 0;
+    
     if (diffDays < 7) {
       return { isValid: false, error: 'Motoristas de aplicativo devem alugar no mínimo 7 dias corridos.' };
+    }
+    
+    if (!isCycleOf7 && !isDay8BecauseSunday) {
+        return { isValid: false, error: 'O período de locação para motoristas de app deve ser em ciclos de 7 dias (semanal).' };
     }
   } else if (plan === 'pf') {
     if (diffDays < 3) {
