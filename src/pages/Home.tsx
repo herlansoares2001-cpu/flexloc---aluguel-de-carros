@@ -177,7 +177,7 @@ export default function Home() {
           <div className="absolute inset-0 bg-background-dark/40"></div>
           <div className="absolute inset-0 hero-gradient"></div>
         </div>
-        <div className="relative z-10 w-full max-w-7xl mx-auto px-10 lg:px-12 pt-24 pb-16 grid lg:grid-cols-2 gap-16 items-center min-h-[90vh]">
+        <div className="relative z-10 w-full max-w-7xl mx-auto px-5 sm:px-10 lg:px-12 pt-28 sm:pt-24 pb-16 grid lg:grid-cols-2 gap-10 lg:gap-16 items-center min-h-[90vh]">
           <div className="flex flex-col gap-6 max-w-2xl items-start text-left">
             <div className="flex items-center gap-4 mb-1 animate-fade-in opacity-80">
               <span className="h-px w-12 bg-primary/80"></span>
@@ -212,19 +212,19 @@ export default function Home() {
               <div className="absolute -inset-20 bg-primary/10 rounded-full blur-[120px] opacity-20 pointer-events-none"></div>
               <div className="absolute -inset-1 bg-primary/20 rounded-[2.5rem] blur-2xl opacity-30 group-hover:opacity-60 transition duration-1000"></div>
               
-              <div className="glass-panel p-6 pb-8 rounded-[2rem] shadow-2xl animate-fade-in-up relative border border-white/10 backdrop-blur-3xl h-fit">
+              <div className="glass-panel p-5 sm:p-6 pb-6 sm:pb-8 rounded-[2rem] shadow-2xl animate-fade-in-up relative border border-white/10 backdrop-blur-3xl h-fit">
                 <div className="flex flex-col gap-6">
                   <div className="space-y-3">
                     <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest ml-4 opacity-70" id="tipo-contrato-label">Tipo de Contrato</label>
                     <div className="flex p-1.5 bg-black/40 rounded-2xl border border-white/5 backdrop-blur-md shadow-inner" role="group" aria-labelledby="tipo-contrato-label">
                       <button type="button" onClick={() => handleTipoChange('app')}
                         aria-pressed={tipo === 'app' ? "true" : "false"}
-                        className={`flex-1 py-3 px-4 rounded-xl text-[11px] uppercase tracking-widest transition-all duration-500 ${tipo === 'app' ? 'font-black bg-primary text-background-dark shadow-xl shadow-primary/20' : 'font-bold text-gray-500 hover:text-white'}`}>
+                        className={`flex-1 py-3 px-2 sm:px-4 rounded-xl text-[10px] sm:text-[11px] uppercase tracking-wider sm:tracking-widest transition-all duration-500 ${tipo === 'app' ? 'font-black bg-primary text-background-dark shadow-xl shadow-primary/20' : 'font-bold text-gray-500 hover:text-white'}`}>
                         Motorista de App
                       </button>
                       <button type="button" onClick={() => handleTipoChange('normal')}
                         aria-pressed={tipo === 'normal' ? "true" : "false"}
-                        className={`flex-1 py-3 px-4 rounded-xl text-[11px] uppercase tracking-widest transition-all duration-500 ${tipo === 'normal' ? 'font-black bg-primary text-background-dark shadow-xl shadow-primary/20' : 'font-bold text-gray-500 hover:text-white'}`}>
+                        className={`flex-1 py-3 px-2 sm:px-4 rounded-xl text-[10px] sm:text-[11px] uppercase tracking-wider sm:tracking-widest transition-all duration-500 ${tipo === 'normal' ? 'font-black bg-primary text-background-dark shadow-xl shadow-primary/20' : 'font-bold text-gray-500 hover:text-white'}`}>
                         Pessoa Física
                       </button>
                     </div>
@@ -267,8 +267,9 @@ export default function Home() {
                     </div>
 
                     <div className="grid gap-4">
-                      <div className="grid grid-cols-5 gap-2 items-end">
-                        <div className="col-span-3 space-y-2">
+                      {/* Retirada */}
+                      <div className="flex flex-col sm:grid sm:grid-cols-5 gap-4 sm:gap-2 sm:items-end">
+                        <div className="w-full sm:col-span-3 space-y-2">
                           <label htmlFor="date-start" className="text-[10px] font-bold text-gray-500 uppercase tracking-widest ml-4 opacity-70 flex justify-between pr-2">
                             Retirada
                             {tipo === 'app' ? (
@@ -284,17 +285,17 @@ export default function Home() {
                             <input ref={dateStartRef}
                               id="date-start"
                               readOnly
-                              className="block w-full pl-11 pr-2 py-4 bg-white/[0.05] border border-white/10 hover:border-primary/50 hover:bg-white/[0.08] rounded-2xl text-white placeholder-gray-500 focus:outline-none transition-all text-xs font-bold tracking-wide cursor-pointer"
+                              className="block w-full pl-11 pr-2 py-4 bg-white/[0.05] border border-white/10 hover:border-primary/50 hover:bg-white/[0.08] rounded-2xl text-white placeholder-gray-500 focus:outline-none transition-all text-sm sm:text-xs font-bold tracking-wide cursor-pointer"
                               type="text" placeholder="Escolha a data" />
                           </div>
                         </div>
-                        <div className="col-span-2 space-y-2 relative">
+                        <div className="w-full sm:col-span-2 space-y-2 relative">
                           <div className="relative w-full">
                             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10">
                               <span className={`material-symbols-outlined text-lg font-light ${isTimeStartOpen ? 'text-primary' : 'text-gray-500'}`}>schedule</span>
                             </div>
                             <button type="button" id="time-start-btn" aria-label="Hora de Retirada" onClick={() => setIsTimeStartOpen(!isTimeStartOpen)}
-                              className={`block w-full text-left pl-10 pr-8 py-4 bg-white/[0.03] border hover:border-primary/50 hover:bg-white/[0.08] rounded-2xl text-white focus:outline-none transition-all text-xs font-bold tracking-wide cursor-pointer relative z-0 ${isTimeStartOpen ? 'border-primary/50 ring-1 ring-primary/50' : 'border-white/5'}`}>
+                              className={`block w-full text-left pl-10 pr-8 py-4 bg-white/[0.03] border hover:border-primary/50 hover:bg-white/[0.08] rounded-2xl text-white focus:outline-none transition-all text-sm sm:text-xs font-bold tracking-wide cursor-pointer relative z-0 ${isTimeStartOpen ? 'border-primary/50 ring-1 ring-primary/50' : 'border-white/5'}`}>
                               <span>{timeStart}</span>
                             </button>
                             <div className={`absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none z-10 text-gray-500 transition-transform duration-300 ${isTimeStartOpen ? 'rotate-180' : ''}`}>
@@ -318,8 +319,9 @@ export default function Home() {
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-5 gap-2 items-end">
-                        <div className="col-span-3 space-y-2">
+                      {/* Devolução */}
+                      <div className="flex flex-col sm:grid sm:grid-cols-5 gap-4 sm:gap-2 sm:items-end">
+                        <div className="w-full sm:col-span-3 space-y-2">
                           <label htmlFor="date-end" className="text-[10px] font-bold text-gray-500 uppercase tracking-widest ml-4 opacity-70 flex justify-between pr-2">
                             Devolução
                             {tipo === 'app' && <span className="text-primary">Ciclo Semanal</span>}
@@ -331,17 +333,17 @@ export default function Home() {
                             <input ref={dateEndRef}
                               id="date-end"
                               readOnly
-                              className="block w-full pl-11 pr-2 py-4 bg-white/[0.05] border border-white/10 hover:border-primary/50 hover:bg-white/[0.08] rounded-2xl text-white placeholder-gray-500 focus:outline-none transition-all text-xs font-bold tracking-wide cursor-pointer"
+                              className="block w-full pl-11 pr-2 py-4 bg-white/[0.05] border border-white/10 hover:border-primary/50 hover:bg-white/[0.08] rounded-2xl text-white placeholder-gray-500 focus:outline-none transition-all text-sm sm:text-xs font-bold tracking-wide cursor-pointer"
                               type="text" placeholder="Escolha a data" />
                           </div>
                         </div>
-                        <div className="col-span-2 space-y-2 relative">
+                        <div className="w-full sm:col-span-2 space-y-2 relative">
                           <div className="relative w-full">
                             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10">
                               <span className={`material-symbols-outlined text-lg font-light ${isTimeEndOpen ? 'text-primary' : 'text-gray-500'}`}>schedule</span>
                             </div>
                             <button type="button" id="time-end-btn" aria-label="Hora de Devolução" onClick={() => setIsTimeEndOpen(!isTimeEndOpen)}
-                              className={`block w-full text-left pl-10 pr-8 py-4 bg-white/[0.03] border hover:border-primary/50 hover:bg-white/[0.08] rounded-2xl text-white focus:outline-none transition-all text-xs font-bold tracking-wide cursor-pointer relative z-0 ${isTimeEndOpen ? 'border-primary/50 ring-1 ring-primary/50' : 'border-white/5'}`}>
+                              className={`block w-full text-left pl-10 pr-8 py-4 bg-white/[0.03] border hover:border-primary/50 hover:bg-white/[0.08] rounded-2xl text-white focus:outline-none transition-all text-sm sm:text-xs font-bold tracking-wide cursor-pointer relative z-0 ${isTimeEndOpen ? 'border-primary/50 ring-1 ring-primary/50' : 'border-white/5'}`}>
                               <span>{timeEnd}</span>
                             </button>
                             <div className={`absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none z-10 text-gray-500 transition-transform duration-300 ${isTimeEndOpen ? 'rotate-180' : ''}`}>
