@@ -139,18 +139,20 @@ export default function Book() {
   const endTimeOptions = getTimeOptions(dateEnd);
 
   useEffect(() => {
-    if (dateStart) {
+    if (dateStart && timeStart) {
       const d = new Date(dateStart + 'T12:00:00');
-      if (d.getDay() === 6 && parseInt(timeStart.split(':')[0]) > 12) {
+      const [h, m] = timeStart.split(':').map(Number);
+      if (d.getDay() === 6 && (h > 12 || (h === 12 && m > 0))) {
         setTimeStart('12:00');
       }
     }
   }, [dateStart, timeStart]);
 
   useEffect(() => {
-    if (dateEnd) {
+    if (dateEnd && timeEnd) {
       const d = new Date(dateEnd + 'T12:00:00');
-      if (d.getDay() === 6 && parseInt(timeEnd.split(':')[0]) > 12) {
+      const [h, m] = timeEnd.split(':').map(Number);
+      if (d.getDay() === 6 && (h > 12 || (h === 12 && m > 0))) {
         setTimeEnd('12:00');
       }
     }
