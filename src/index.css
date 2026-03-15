@@ -663,3 +663,13 @@ span.flatpickr-weekday {
 .flatpickr-prev-month:hover svg, .flatpickr-next-month:hover svg {
   fill: white !important;
 }
+
+.safe-area-bottom {
+    padding-bottom: calc(1rem + env(safe-area-inset-bottom)) !important;
+}
+
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+    .safe-area-bottom {
+        padding-bottom: calc(1rem + env(safe-area-inset-bottom)) !important;
+    }
+}

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import flatpickr from 'flatpickr';
 import { Portuguese } from 'flatpickr/dist/l10n/pt.js';
 import { validateRental } from '../utils/rentalValidation';
+import { toLocalMidnight } from '../utils/dateUtils';
 
 export function useRentalCalendar(plan: 'motorista' | 'pf', defaultStart = '', defaultEnd = '') {
   const dateStartRef = useRef<HTMLInputElement>(null);
@@ -25,6 +26,24 @@ export function useRentalCalendar(plan: 'motorista' | 'pf', defaultStart = '', d
   useEffect(() => {
     dateStartValue.current = dateStart;
     dateEndValue.current = dateEnd;
+    
+    // Ensure flatpickr is in sync with state (e.g. from URL params or programmatic changes)
+    if (fpStart.current && dateStart) {
+      const currentSelected = fpStart.current.selectedDates[0];
+      const stateDate = toLocalMidnight(dateStart);
+      if (stateDate && (!currentSelected || currentSelected.getTime() !== stateDate.getTime())) {
+        fpStart.current.setDate(stateDate, false);
+      }
+    }
+    
+    if (fpEnd.current && dateEnd) {
+      const currentSelected = fpEnd.current.selectedDates[0];
+      const stateDate = toLocalMidnight(dateEnd);
+      if (stateDate && (!currentSelected || currentSelected.getTime() !== stateDate.getTime())) {
+        fpEnd.current.setDate(stateDate, false);
+      }
+    }
+    
     if (fpStart.current) fpStart.current.redraw();
     if (fpEnd.current) fpEnd.current.redraw();
   }, [dateStart, dateEnd]);
@@ -147,7 +166,7 @@ export function useRentalCalendar(plan: 'motorista' | 'pf', defaultStart = '', d
             return date.getDay() === 0;
           }
         ],
-        defaultDate: defaultStart ? new Date(defaultStart + 'T12:00:00') : undefined,
+        defaultDate: toLocalMidnight(defaultStart) || undefined,
         onChange: (selectedDates) => {
           if (selectedDates.length > 0) {
             const d = selectedDates[0];
@@ -159,8 +178,8 @@ export function useRentalCalendar(plan: 'motorista' | 'pf', defaultStart = '', d
         },
         onDayCreate: (dObj, dStr, fp, dayElem: any) => {
           dayElem.classList.add('transition-all', 'duration-300');
-          const start = dateStartValue.current ? new Date(dateStartValue.current + 'T12:00:00') : null;
-          const end = dateEndValue.current ? new Date(dateEndValue.current + 'T12:00:00') : null;
+          const start = toLocalMidnight(dateStartValue.current);
+          const end = toLocalMidnight(dateEndValue.current);
           
           if (start && end && dayElem.dateObj) {
             const currentTime = dayElem.dateObj.getTime();
@@ -194,7 +213,7 @@ export function useRentalCalendar(plan: 'motorista' | 'pf', defaultStart = '', d
             return date.getDay() === 0;
           }
         ],
-        defaultDate: defaultEnd ? new Date(defaultEnd + 'T12:00:00') : undefined,
+        defaultDate: toLocalMidnight(defaultEnd) || undefined,
         onChange: (selectedDates) => {
           if (selectedDates.length > 0) {
             const d = selectedDates[0];
@@ -212,8 +231,8 @@ export function useRentalCalendar(plan: 'motorista' | 'pf', defaultStart = '', d
         },
         onDayCreate: (dObj, dStr, fp, dayElem: any) => {
           dayElem.classList.add('transition-all', 'duration-300');
-          const start = dateStartValue.current ? new Date(dateStartValue.current + 'T12:00:00') : null;
-          const end = dateEndValue.current ? new Date(dateEndValue.current + 'T12:00:00') : null;
+          const start = toLocalMidnight(dateStartValue.current);
+          const end = toLocalMidnight(dateEndValue.current);
           
           if (start && end && dayElem.dateObj) {
             const currentTime = dayElem.dateObj.getTime();
@@ -272,8 +291,9 @@ export function useRentalCalendar(plan: 'motorista' | 'pf', defaultStart = '', d
   };
 
   const totalDays = dateStart && dateEnd 
-    ? Math.round((new Date(dateEnd + 'T12:00:00').getTime() - new Date(dateStart + 'T12:00:00').getTime()) / 86400000)
+    ? Math.round(((toLocalMidnight(dateEnd)?.getTime() || 0) - (toLocalMidnight(dateStart)?.getTime() || 0)) / 86400000)
     : 0;
+
 
   return {
     dateStartRef,
