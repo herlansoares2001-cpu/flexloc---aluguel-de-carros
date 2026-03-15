@@ -51,24 +51,21 @@ export function validateRental(params: RentalValidationParams): ValidationResult
   }
 
   const diffTime = Math.abs(end.getTime() - start.getTime());
-  const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24)) + 1;
+  const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
 
   if (plan === 'motorista') {
-    // Solução para o conflito de ciclo de 7 dias vs Domingo:
-    // Se o aluguel tiver 8 dias e o 7º dia foi um domingo, permitimos.
     const isCycleOf7 = diffDays % 7 === 0;
-    const isDay8BecauseSunday = diffDays === 8 && new Date(end.getTime() - 86400000).getDay() === 0;
     
     if (diffDays < 7) {
-      return { isValid: false, error: 'Motoristas de aplicativo devem alugar no mínimo 7 dias corridos.' };
+      return { isValid: false, error: 'Motoristas de aplicativo devem alugar no mínimo 7 dias (semanal).' };
     }
     
-    if (!isCycleOf7 && !isDay8BecauseSunday) {
+    if (!isCycleOf7) {
         return { isValid: false, error: 'O período de locação para motoristas de app deve ser em ciclos de 7 dias (semanal).' };
     }
   } else if (plan === 'pf') {
     if (diffDays < 3) {
-      return { isValid: false, error: 'A locação mínima para pessoa física é de 3 dias corridos.' };
+      return { isValid: false, error: 'A locação mínima para pessoa física é de 3 dias.' };
     }
   }
 

@@ -42,10 +42,9 @@ export function useRentalCalendar(plan: 'motorista' | 'pf', defaultStart = '', d
     const nowMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     
     const minDays = currentPlan === 'motorista' ? 7 : 3;
-    // CORREÇÃO: Subtrair 1 do multiplicador pois o dia atual conta como 1
     const minEnd = startMidnight 
-      ? new Date(startMidnight.getTime() + (minDays - 1) * 86400000) 
-      : new Date(nowMidnight.getTime() + (minDays - 1) * 86400000);
+      ? new Date(startMidnight.getTime() + minDays * 86400000) 
+      : new Date(nowMidnight.getTime() + minDays * 86400000);
     
     try {
       if (typeof fpEnd.current.set === 'function') {
@@ -59,13 +58,9 @@ export function useRentalCalendar(plan: 'motorista' | 'pf', defaultStart = '', d
           if (startMidnight) {
             disableFunctions.push(function(date: Date) {
               const dateMidnight = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-              const diffDays = Math.round((dateMidnight.getTime() - startMidnight.getTime()) / 86400000) + 1;
-              
-              // Permitir ciclos de 7 ou 8 se o 7 cair no domingo
+              const diffDays = Math.round((dateMidnight.getTime() - startMidnight.getTime()) / 86400000);
               const isCycleOf7 = diffDays % 7 === 0;
-              const isDay8BecauseSunday = diffDays === 8 && new Date(dateMidnight.getTime() - 86400000).getDay() === 0;
-
-              return diffDays < 7 || (!isCycleOf7 && !isDay8BecauseSunday);
+              return diffDays < 7 || !isCycleOf7;
             });
           } else {
             disableFunctions.push(function(date: Date) {
@@ -107,7 +102,7 @@ export function useRentalCalendar(plan: 'motorista' | 'pf', defaultStart = '', d
       }
 
       if (isInvalid) {
-        let suggestedEnd = new Date(startMidnight.getTime() + (suggestedDays - 1) * 86400000);
+        let suggestedEnd = new Date(startMidnight.getTime() + suggestedDays * 86400000);
         
         // Se a sugestão cair no domingo, avançar para segunda
         if (suggestedEnd.getDay() === 0) {
@@ -264,7 +259,7 @@ export function useRentalCalendar(plan: 'motorista' | 'pf', defaultStart = '', d
   };
 
   const totalDays = dateStart && dateEnd 
-    ? Math.round((new Date(dateEnd + 'T12:00:00').getTime() - new Date(dateStart + 'T12:00:00').getTime()) / 86400000) + 1
+    ? Math.round((new Date(dateEnd + 'T12:00:00').getTime() - new Date(dateStart + 'T12:00:00').getTime()) / 86400000)
     : 0;
 
   return {
