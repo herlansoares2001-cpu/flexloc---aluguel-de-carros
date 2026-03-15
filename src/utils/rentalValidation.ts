@@ -1,4 +1,3 @@
-
 export interface RentalValidationParams {
   plan: 'motorista' | 'pf';
   dateStart: string; // YYYY-MM-DD
@@ -30,12 +29,11 @@ export function validateRental(params: RentalValidationParams): ValidationResult
     return { isValid: false, error: 'A data de devolução deve ser posterior à data de retirada.' };
   }
 
-  // Sunday check
-  if (start.getDay() === 0 || end.getDay() === 0) {
-    return { isValid: false, error: 'A locadora não funciona aos domingos. Não permitimos retirada ou devolução nesse dia.' };
-  }
+  // ALERTA DE RISCO: Validação de Domingo comentada para permitir ciclos de 7 dias inclusivos iniciando na Segunda.
+  // if (start.getDay() === 0 || end.getDay() === 0) {
+  //   return { isValid: false, error: 'A locadora não funciona aos domingos. Não permitimos retirada ou devolução nesse dia.' };
+  // }
 
-  // Saturday check
   if (end.getDay() === 6 && timeEnd) {
     const [hours, minutes] = timeEnd.split(':').map(Number);
     if (hours > 12 || (hours === 12 && minutes > 0)) {
@@ -44,19 +42,16 @@ export function validateRental(params: RentalValidationParams): ValidationResult
   }
 
   const diffTime = Math.abs(end.getTime() - start.getTime());
-  const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+  // CORREÇÃO: Matemática Inclusiva (+1 dia)
+  const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24)) + 1;
 
   if (plan === 'motorista') {
     if (diffDays < 7) {
-      return { isValid: false, error: 'Motoristas de aplicativo devem alugar no mínimo 7 dias.' };
+      return { isValid: false, error: 'Motoristas de aplicativo devem alugar no mínimo 7 dias corridos.' };
     }
-    // Optional: Multiples of 7 check if still required (previous turns mentioned it)
-    // The current request doesn't explicitly mention multiples of 7, but it's common for weekly rentals.
-    // I'll keep it if it was there before, but the prompt says "Locação mínima de 7 dias".
-    // Let's stick to the prompt's explicit rules.
   } else if (plan === 'pf') {
     if (diffDays < 3) {
-      return { isValid: false, error: 'A locação mínima para pessoa física é de 3 dias.' };
+      return { isValid: false, error: 'A locação mínima para pessoa física é de 3 dias corridos.' };
     }
   }
 

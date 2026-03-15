@@ -597,6 +597,12 @@ span.flatpickr-weekday {
   border-color: transparent !important;
   box-shadow: -5px 0 0 rgba(230, 197, 25, 0.1), 5px 0 0 rgba(230, 197, 25, 0.1) !important;
   border-radius: 0 !important;
+  color: white !important;
+}
+
+.flatpickr-day.in-range-bg {
+  background: rgba(230, 197, 25, 0.1) !important;
+  color: white !important;
 }
 
 .flatpickr-day.today {
