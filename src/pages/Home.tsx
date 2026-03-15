@@ -178,32 +178,45 @@ export default function Home() {
           <div className="absolute inset-0 hero-gradient"></div>
         </div>
         <div className="relative z-10 w-full max-w-7xl mx-auto px-5 sm:px-10 lg:px-12 pt-28 sm:pt-24 pb-16 grid lg:grid-cols-2 gap-10 lg:gap-16 items-center min-h-[90vh]">
-          <div className="flex flex-col gap-6 max-w-2xl items-start text-left">
-            <div className="flex items-center gap-4 mb-1 animate-fade-in opacity-80">
-              <span className="h-px w-12 bg-primary/80"></span>
-              <span className="text-primary/90 text-sm font-medium uppercase tracking-[0.3em]">Mobilidade inteligente</span>
+          <div className="flex flex-col gap-5 lg:gap-6 max-w-2xl items-center text-center lg:items-start lg:text-left w-full mx-auto lg:mx-0">
+            
+            {/* Label Superior */}
+            <div className="flex items-center justify-center lg:justify-start gap-3 mb-1 animate-fade-in opacity-80">
+              <span className="h-[2px] w-6 lg:w-12 bg-primary/80 rounded-full"></span>
+              <span className="text-primary/90 text-[10px] sm:text-xs lg:text-sm font-bold uppercase tracking-[0.25em] lg:tracking-[0.3em]">Mobilidade inteligente</span>
+              <span className="h-[2px] w-6 bg-primary/80 rounded-full lg:hidden"></span>
             </div>
-            <h1 className="text-4xl md:text-5xl lg:text-7xl font-normal text-white leading-[1.1] tracking-tight mb-10">
-              <span className="block font-light text-white/90">Sua jornada</span>
-              <span className="font-medium bg-clip-text text-transparent italic text-gradient-animate pr-12 pb-2">começa aqui</span>
+
+            {/* Título Principal */}
+            <h1 className="text-[2.5rem] leading-[1.05] sm:text-5xl lg:text-7xl font-normal text-white tracking-tight mb-2 lg:mb-6 w-full">
+              <span className="block font-light text-white/90 mb-1 lg:mb-2">Sua jornada</span>
+              <span className="inline-block font-medium bg-clip-text text-transparent italic text-gradient-animate pb-2 lg:pr-12">começa aqui</span>
             </h1>
-            <p className="text-base lg:text-lg text-gray-400 font-light max-w-xl leading-relaxed tracking-wide font-sans lg:border-l lg:border-white/10 lg:pl-6 text-center lg:text-left">
-              Na Flexloc você aluga veículos revisados, econômicos e prontos para rodar — seja para trabalhar com aplicativos, fazer entregas ou simplesmente ter um carro sempre disponível.<br /><br />
-              Sem burocracia, com economia de combustível e aprovação rápida.
+
+            {/* Parágrafo */}
+            <p className="text-sm sm:text-base lg:text-lg text-gray-400 font-light max-w-md lg:max-w-xl leading-relaxed tracking-wide font-sans lg:border-l lg:border-white/10 lg:pl-6">
+              Na Flexloc você aluga veículos revisados, econômicos e prontos para rodar — seja para trabalhar com aplicativos, fazer entregas ou ter um carro disponível.
+              <span className="block mt-3 lg:mt-4 text-white/70 font-medium">Sem burocracia, com economia e aprovação rápida.</span>
             </p>
-            <div className="mt-4 flex flex-wrap gap-x-8 gap-y-4 justify-center lg:justify-start">
-              <div className="flex items-center gap-2 text-white/50 text-sm font-medium uppercase tracking-wider group">
-                <span className="material-symbols-outlined text-primary/80 text-base font-light group-hover:scale-110 transition-transform">verified</span>
-                <span className="group-hover:text-white transition-colors">Aprovação rápida</span>
+
+            {/* Benefícios (Premium Pills no Mobile, Clean no Desktop) */}
+            <div className="mt-4 lg:mt-2 flex flex-wrap gap-2.5 lg:gap-x-8 lg:gap-y-4 justify-center lg:justify-start w-full max-w-md lg:max-w-none">
+              
+              <div className="flex items-center gap-1.5 px-3.5 py-2 lg:px-0 lg:py-0 rounded-full bg-white/5 lg:bg-transparent border border-white/10 lg:border-transparent backdrop-blur-sm lg:backdrop-blur-none group">
+                <span className="material-symbols-outlined text-primary/80 text-[16px] lg:text-base font-light group-hover:scale-110 transition-transform">verified</span>
+                <span className="text-white/80 lg:text-white/50 text-[10px] lg:text-sm font-bold lg:font-medium uppercase tracking-wider group-hover:text-white transition-colors">Aprovação rápida</span>
               </div>
-              <div className="flex items-center gap-2 text-white/50 text-sm font-medium uppercase tracking-wider group">
-                <span className="material-symbols-outlined text-primary/80 text-base font-light group-hover:scale-110 transition-transform">local_gas_station</span>
-                <span className="group-hover:text-white transition-colors">Veículos com GNV</span>
+              
+              <div className="flex items-center gap-1.5 px-3.5 py-2 lg:px-0 lg:py-0 rounded-full bg-white/5 lg:bg-transparent border border-white/10 lg:border-transparent backdrop-blur-sm lg:backdrop-blur-none group">
+                <span className="material-symbols-outlined text-primary/80 text-[16px] lg:text-base font-light group-hover:scale-110 transition-transform">local_gas_station</span>
+                <span className="text-white/80 lg:text-white/50 text-[10px] lg:text-sm font-bold lg:font-medium uppercase tracking-wider group-hover:text-white transition-colors">Veículos com GNV</span>
               </div>
-              <div className="flex items-center gap-2 text-white/50 text-sm font-medium uppercase tracking-wider group">
-                <span className="material-symbols-outlined text-primary/80 text-base font-light group-hover:scale-110 transition-transform">stars</span>
-                <span className="group-hover:text-white transition-colors">Ideal para trabalho ou uso pessoal</span>
+              
+              <div className="flex items-center gap-1.5 px-3.5 py-2 lg:px-0 lg:py-0 rounded-full bg-white/5 lg:bg-transparent border border-white/10 lg:border-transparent backdrop-blur-sm lg:backdrop-blur-none group">
+                <span className="material-symbols-outlined text-primary/80 text-[16px] lg:text-base font-light group-hover:scale-110 transition-transform">stars</span>
+                <span className="text-white/80 lg:text-white/50 text-[10px] lg:text-sm font-bold lg:font-medium uppercase tracking-wider group-hover:text-white transition-colors">Uso flexível</span>
               </div>
+
             </div>
           </div>
 
