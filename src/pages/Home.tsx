@@ -107,7 +107,7 @@ export default function Home() {
       console.error('Backend validation error:', err);
     }
 
-    const params = new URLSearchParams({ loc: location, tipo, plan, dateStart, dateEnd, timeStart, timeEnd });
+    const params = new URLSearchParams({ loc: location, tipo: tipo, plan: plan, dateStart: dateStart, dateEnd: dateEnd, timeStart: timeStart, timeEnd: timeEnd });
     navigate(`/book?${params.toString()}`);
   };
 
@@ -208,7 +208,7 @@ export default function Home() {
               <div className="absolute -inset-20 bg-primary/10 rounded-full blur-[120px] opacity-20 pointer-events-none"></div>
               <div className="absolute -inset-1 bg-primary/20 rounded-[2.5rem] blur-2xl opacity-30 group-hover:opacity-60 transition duration-1000"></div>
               
-              <div className="glass-panel p-6 pb-8 rounded-[2rem] shadow-2xl animate-fade-in-up relative border border-white/10 backdrop-blur-3xl">
+              <div className="glass-panel p-6 pb-8 rounded-[2rem] shadow-2xl animate-fade-in-up relative border border-white/10 backdrop-blur-3xl overflow-visible">
                 <div className="flex flex-col gap-6">
                   <div className="space-y-3">
                     <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest ml-4 opacity-70" id="tipo-contrato-label">Tipo de Contrato</label>
@@ -273,7 +273,7 @@ export default function Home() {
                               <span className="text-primary animate-pulse">Min. 3d</span>
                             )}
                           </label>
-                          <div className="relative group/field">
+                          <div className={`relative group/field ${isCalendarStartOpen ? 'z-50' : 'z-10'}`}>
                             <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none z-10">
                               <span className="material-symbols-outlined text-primary text-lg font-light">calendar_today</span>
                             </div>
@@ -342,7 +342,7 @@ export default function Home() {
                             Devolução
                             {tipo === 'app' && <span className="text-primary">Ciclo Semanal</span>}
                           </label>
-                          <div className="relative group/field">
+                          <div className={`relative group/field ${isCalendarEndOpen ? 'z-50' : 'z-10'}`}>
                             <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none z-10">
                               <span className="material-symbols-outlined text-primary text-lg font-light">event_repeat</span>
                             </div>
