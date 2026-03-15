@@ -32,6 +32,7 @@ export default function Home() {
     setViewDateEnd,
     handleSelectStart,
     handleSelectEnd,
+    isDateDisabled,
     error,
     setError,
     warning,
@@ -291,17 +292,19 @@ export default function Home() {
 
                             {isCalendarStartOpen && (
                               <div className="absolute z-[100] left-0 mt-2 w-[310px] sm:w-[340px]">
-                                <Calendar 
-                                  currentMonth={viewDateStart.getMonth()}
-                                  currentYear={viewDateStart.getFullYear()}
-                                  selectedDate={selectedDateStart}
-                                  onSelectDate={(date) => {
-                                    handleSelectStart(date);
-                                    setIsCalendarStartOpen(false);
-                                  }}
-                                  onNavigate={(year, month) => setViewDateStart(new Date(year, month, 1))}
-                                  label="Data de Retirada"
-                                />
+                                  <Calendar 
+                                   currentMonth={viewDateStart.getMonth()}
+                                   currentYear={viewDateStart.getFullYear()}
+                                   startDate={selectedDateStart}
+                                   endDate={selectedDateEnd}
+                                   onSelectDate={(date) => {
+                                     handleSelectStart(date);
+                                     setIsCalendarStartOpen(false);
+                                   }}
+                                   onNavigate={(year, month) => setViewDateStart(new Date(year, month, 1))}
+                                   isDateDisabled={isDateDisabled}
+                                   label="Data de Retirada"
+                                 />
                               </div>
                             )}
                           </div>
@@ -360,17 +363,19 @@ export default function Home() {
 
                             {isCalendarEndOpen && (
                               <div className="absolute z-[100] left-0 mt-2 w-[310px] sm:w-[340px]">
-                                <Calendar 
-                                  currentMonth={viewDateEnd.getMonth()}
-                                  currentYear={viewDateEnd.getFullYear()}
-                                  selectedDate={selectedDateEnd}
-                                  onSelectDate={(date) => {
-                                    handleSelectEnd(date);
-                                    setIsCalendarEndOpen(false);
-                                  }}
-                                  onNavigate={(year, month) => setViewDateEnd(new Date(year, month, 1))}
-                                  label="Data de Devolução"
-                                />
+                                  <Calendar 
+                                   currentMonth={viewDateEnd.getMonth()}
+                                   currentYear={viewDateEnd.getFullYear()}
+                                   startDate={selectedDateStart}
+                                   endDate={selectedDateEnd}
+                                   onSelectDate={(date) => {
+                                     handleSelectEnd(date);
+                                     setIsCalendarEndOpen(false);
+                                   }}
+                                   onNavigate={(year, month) => setViewDateEnd(new Date(year, month, 1))}
+                                   isDateDisabled={isDateDisabled}
+                                   label="Data de Devolução"
+                                 />
                               </div>
                             )}
                           </div>

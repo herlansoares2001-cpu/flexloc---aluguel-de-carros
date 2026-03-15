@@ -52,6 +52,7 @@ export default function Book() {
     setViewDateEnd,
     handleSelectStart,
     handleSelectEnd,
+    isDateDisabled,
     error,
     setError,
     warning,
@@ -520,13 +521,15 @@ Aguardo retorno para finalizar!`;
                         <Calendar 
                           currentMonth={viewDateStart.getMonth()}
                           currentYear={viewDateStart.getFullYear()}
-                          selectedDate={selectedDateStart}
+                          startDate={selectedDateStart}
+                          endDate={selectedDateEnd}
                           onSelectDate={(date) => {
                             handleSelectStart(date);
                             setIsCalendarStartOpen(false);
                           }}
                           onNavigate={(year, month) => setViewDateStart(new Date(year, month, 1))}
-                          label="Retirada"
+                          isDateDisabled={isDateDisabled}
+                          label="Data de Retirada"
                         />
                       </div>
                     )}
@@ -587,13 +590,15 @@ Aguardo retorno para finalizar!`;
                         <Calendar 
                           currentMonth={viewDateEnd.getMonth()}
                           currentYear={viewDateEnd.getFullYear()}
-                          selectedDate={selectedDateEnd}
+                          startDate={selectedDateStart}
+                          endDate={selectedDateEnd}
                           onSelectDate={(date) => {
                             handleSelectEnd(date);
                             setIsCalendarEndOpen(false);
                           }}
                           onNavigate={(year, month) => setViewDateEnd(new Date(year, month, 1))}
-                          label="Devolução"
+                          isDateDisabled={isDateDisabled}
+                          label="Data de Devolução"
                         />
                       </div>
                     )}

@@ -1,6 +1,13 @@
 import { useState, useMemo, useCallback } from 'react';
 import { validateRental } from '../utils/rentalValidation';
 
+// Substitui o parse problemático com 'T12:00:00' por este padrão local seguro
+const parseLocalDate = (dateString: string) => {
+  if (!dateString) return null;
+  const [year, month, day] = dateString.split('-').map(Number);
+  return new Date(year, month - 1, day); // Ano, Mês (0-11), Dia - sempre meia noite local
+};
+
 export function useRentalCalendar(plan: 'motorista' | 'pf', defaultStart = '', defaultEnd = '') {
   const [dateStart, setDateStart] = useState(defaultStart);
   const [dateEnd, setDateEnd] = useState(defaultEnd);
@@ -15,8 +22,8 @@ export function useRentalCalendar(plan: 'motorista' | 'pf', defaultStart = '', d
     return d;
   });
 
-  const selectedDateStart = useMemo(() => dateStart ? new Date(dateStart + 'T12:00:00') : null, [dateStart]);
-  const selectedDateEnd = useMemo(() => dateEnd ? new Date(dateEnd + 'T12:00:00') : null, [dateEnd]);
+  const selectedDateStart = useMemo(() => parseLocalDate(dateStart), [dateStart]);
+  const selectedDateEnd = useMemo(() => parseLocalDate(dateEnd), [dateEnd]);
 
   const handleSelectStart = useCallback((date: Date) => {
     // Regra: Domingo fechado
@@ -70,6 +77,11 @@ export function useRentalCalendar(plan: 'motorista' | 'pf', defaultStart = '', d
     }
   }, [plan, selectedDateStart]);
 
+  const isDateDisabled = useCallback((date: Date) => {
+    // Retorna true se for domingo (desabilita visualmente na grade antes do clique)
+    return date.getDay() === 0;
+  }, []);
+
   const validateDates = (timeStart?: string, timeEnd?: string) => {
     const result = validateRental({
       plan,
@@ -89,9 +101,9 @@ export function useRentalCalendar(plan: 'motorista' | 'pf', defaultStart = '', d
   };
 
   const totalDays = useMemo(() => {
-    if (!dateStart || !dateEnd) return 0;
-    return Math.round((new Date(dateEnd + 'T12:00:00').getTime() - new Date(dateStart + 'T12:00:00').getTime()) / 86400000);
-  }, [dateStart, dateEnd]);
+    if (!selectedDateStart || !selectedDateEnd) return 0;
+    return Math.round((selectedDateEnd.getTime() - selectedDateStart.getTime()) / 86400000);
+  }, [selectedDateStart, selectedDateEnd]);
 
   return {
     dateStart,
@@ -104,6 +116,7 @@ export function useRentalCalendar(plan: 'motorista' | 'pf', defaultStart = '', d
     setViewDateEnd,
     handleSelectStart,
     handleSelectEnd,
+    isDateDisabled,
     error,
     setError,
     warning,
