@@ -8,7 +8,7 @@ interface FlatpickrDayElement extends HTMLElement {
   dateObj?: Date;
 }
 
-export function useRentalCalendar(plan: 'motorista' | 'pf', defaultStart = '', defaultEnd = '') {
+export function useRentalCalendar(plan: 'motorista' | 'pf', defaultStart = '', defaultEnd = '', disableFp = false) {
   const dateStartRef = useRef<HTMLInputElement>(null);
   const dateEndRef = useRef<HTMLInputElement>(null);
   const fpStart = useRef<flatpickr.Instance | null>(null);
@@ -116,6 +116,7 @@ export function useRentalCalendar(plan: 'motorista' | 'pf', defaultStart = '', d
   };
 
   useEffect(() => {
+    if (disableFp) return;
     let maxBoundary = new Date();
     maxBoundary.setMonth(maxBoundary.getMonth() + 6);
 

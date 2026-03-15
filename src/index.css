@@ -405,7 +405,7 @@ input::placeholder {
   color: white !important;
   padding: 20px 16px !important;
   font-family: var(--font-sans) !important;
-  width: 340px !important;
+  width: 348px !important; /* Aumentado para acomodar margens sub-pixel */
   animation: fpFadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   transform-origin: top center;
   box-sizing: border-box !important;
@@ -448,12 +448,8 @@ body .flatpickr-calendar .flatpickr-current-month {
 }
 
 .flatpickr-weekdays {
-  width: 308px !important;
-  max-width: 308px !important;
-  margin: 0 auto !important;
-  display: grid !important; /* Alterado de flex para grid */
+  display: grid !important;
   grid-template-columns: repeat(7, 1fr) !important;
-  justify-items: center !important;
 }
 
 .flatpickr-month {
@@ -535,8 +531,9 @@ span.flatpickr-weekday {
   font-size: 12px !important;
   text-transform: capitalize !important;
   letter-spacing: 0.02em !important;
-  padding-top: 12px !important;
-  padding-bottom: 12px !important;
+  padding: 12px 0 !important;
+  width: 100% !important;
+  text-align: center !important;
 }
 
 .flatpickr-days {
@@ -544,13 +541,11 @@ span.flatpickr-weekday {
 }
 
 .dayContainer {
-  width: 308px !important;
-  min-width: 308px !important;
-  max-width: 308px !important;
-  display: grid !important; /* Alterado de flex para grid */
+  display: grid !important;
   grid-template-columns: repeat(7, 1fr) !important;
-  gap: 4px 0 !important;
-  padding-top: 8px !important;
+  gap: 0 !important;
+  padding: 4px 0 !important;
+  box-sizing: border-box !important;
 }
 
 /* ====================================================
@@ -565,12 +560,13 @@ span.flatpickr-weekday {
   font-size: 14px !important;
   height: 40px !important;
   line-height: 40px !important;
-  width: 40px !important;
-  /* CORREÇÃO: Removida a margem lateral que causava a quebra de linha */
+  width: 100% !important;
+  max-width: 40px !important;
   margin: 2px 0 !important; 
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
+  box-sizing: border-box !important;
 }
 
 .flatpickr-day:hover, .flatpickr-day:focus {

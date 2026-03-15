@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { CARS, TESTIMONIALS } from '../constants';
 import { useRentalCalendar } from '../hooks/useRentalCalendar';
+import Calendar from '../components/Calendar';
 
 export default function Home() {
   const navigate = useNavigate();
@@ -12,6 +13,7 @@ export default function Home() {
   const [isLocationOpen, setIsLocationOpen] = useState(false);
   const [isTimeStartOpen, setIsTimeStartOpen] = useState(false);
   const [isTimeEndOpen, setIsTimeEndOpen] = useState(false);
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [timeStart, setTimeStart] = useState('10:00');
   const [timeEnd, setTimeEnd] = useState('10:00');
   const [isVideoPlaying, setIsVideoPlaying] = useState(true);
@@ -27,7 +29,7 @@ export default function Home() {
     warning,
     validateDates,
     totalDays
-  } = useRentalCalendar(plan);
+  } = useRentalCalendar(plan, '', '', true);
 
   useEffect(() => {
     document.title = "FlexLoc — Aluguel de Carros Inteligente e Sem Burocracia";
@@ -270,6 +272,8 @@ export default function Home() {
                             </div>
                             <input ref={dateStartRef}
                               id="date-start"
+                              readOnly
+                              onClick={() => setIsCalendarOpen(!isCalendarOpen)}
                               className="block w-full pl-11 pr-2 py-4 bg-white/[0.05] border border-white/10 hover:border-primary/50 hover:bg-white/[0.08] rounded-2xl text-white placeholder-gray-500 focus:outline-none transition-all text-xs font-bold tracking-wide cursor-pointer"
                               type="text" placeholder="Escolha a data" />
                           </div>
@@ -316,6 +320,8 @@ export default function Home() {
                             </div>
                             <input ref={dateEndRef}
                               id="date-end"
+                              readOnly
+                              onClick={() => setIsCalendarOpen(!isCalendarOpen)}
                               className="block w-full pl-11 pr-2 py-4 bg-white/[0.05] border border-white/10 hover:border-primary/50 hover:bg-white/[0.08] rounded-2xl text-white placeholder-gray-500 focus:outline-none transition-all text-xs font-bold tracking-wide cursor-pointer"
                               type="text" placeholder="Escolha a data" />
                           </div>
@@ -350,6 +356,37 @@ export default function Home() {
                         </div>
                       </div>
                     </div>
+
+                    {isCalendarOpen && (
+                      <div className="absolute z-[60] left-0 right-0 top-full mt-2 lg:-left-4 lg:-right-4 animate-fade-in">
+                        <Calendar
+                          initialMonth={new Date()}
+                          weekStartsOn={1}
+                          selectedStart={dateStart}
+                          selectedEnd={dateEnd}
+                          onRangeSelect={(start, end) => {
+                            if (dateStartRef.current) {
+                              (dateStartRef.current as HTMLInputElement).value = start || '';
+                              dateStartRef.current.dispatchEvent(new Event('input', { bubbles: true }));
+                            }
+                            if (dateEndRef.current) {
+                              (dateEndRef.current as HTMLInputElement).value = end || '';
+                              dateEndRef.current.dispatchEvent(new Event('input', { bubbles: true }));
+                            }
+                            if (start && end) {
+                              // Opcional: fechar após selecionar o intervalo
+                              // setIsCalendarOpen(false);
+                            }
+                          }}
+                        />
+                        <button 
+                          onClick={() => setIsCalendarOpen(false)}
+                          className="w-full mt-2 py-2 bg-white/5 hover:bg-white/10 rounded-xl text-[10px] font-black uppercase tracking-widest text-gray-400 transition-all backdrop-blur-md"
+                        >
+                          Fechar Calendário
+                        </button>
+                      </div>
+                    )}
 
                     <button onClick={goToBook}
                       className="w-full mt-4 py-5 bg-primary text-background-dark text-sm font-black uppercase tracking-[0.25em] rounded-2xl hover:bg-white hover:text-black transition-all duration-500 shadow-[0_20px_40px_rgba(255,217,0,0.3)] flex items-center justify-center gap-3 group active:scale-[0.97]">
