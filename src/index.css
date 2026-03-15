@@ -451,8 +451,9 @@ body .flatpickr-calendar .flatpickr-current-month {
   width: 308px !important;
   max-width: 308px !important;
   margin: 0 auto !important;
-  display: flex !important;
-  justify-content: space-around !important;
+  display: grid !important; /* Alterado de flex para grid */
+  grid-template-columns: repeat(7, 1fr) !important;
+  justify-items: center !important;
 }
 
 .flatpickr-month {
@@ -543,14 +544,13 @@ span.flatpickr-weekday {
 }
 
 .dayContainer {
-  width: 100% !important;
-  min-width: 100% !important;
-  max-width: 100% !important;
-  display: flex !important;
-  flex-wrap: wrap !important;
-  justify-content: space-between !important; /* Distribui o espaço extra automaticamente entre os dias */
+  width: 308px !important;
+  min-width: 308px !important;
+  max-width: 308px !important;
+  display: grid !important; /* Alterado de flex para grid */
+  grid-template-columns: repeat(7, 1fr) !important;
+  gap: 4px 0 !important;
   padding-top: 8px !important;
-  gap: 4px 0 !important; 
 }
 
 /* ====================================================
@@ -565,13 +565,9 @@ span.flatpickr-weekday {
   font-size: 14px !important;
   height: 40px !important;
   line-height: 40px !important;
-  
-  /* CORREÇÃO AQUI */
   width: 40px !important;
-  max-width: 40px !important;
-  flex-basis: 40px !important;
-  margin: 2px 0 !important; /* Margin 0 nas laterais, pois o justify-content já faz o alinhamento */
-  
+  /* CORREÇÃO: Removida a margem lateral que causava a quebra de linha */
+  margin: 2px 0 !important; 
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
