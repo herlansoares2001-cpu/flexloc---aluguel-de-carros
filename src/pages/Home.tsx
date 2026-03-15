@@ -731,12 +731,7 @@ export default function Home() {
                             </div>
                         </div>
                     </div>
-                    <div className="pt-4">
-                        <a className="inline-flex items-center text-primary font-bold hover:text-white transition-colors group" href="#">
-                            Conheça nossa equipe completa
-                            <span className="material-symbols-outlined ml-2 transform group-hover:translate-x-1 transition-transform">arrow_forward</span>
-                        </a>
-                    </div>
+
                 </div>
             </div>
         </div>
