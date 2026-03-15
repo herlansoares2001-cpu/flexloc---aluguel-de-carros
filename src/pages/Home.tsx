@@ -32,7 +32,8 @@ export default function Home() {
     setViewDateEnd,
     handleSelectStart,
     handleSelectEnd,
-    isDateDisabled,
+    isStartDateDisabled,
+    isEndDateDisabled,
     error,
     setError,
     warning,
@@ -302,7 +303,7 @@ export default function Home() {
                                      setIsCalendarStartOpen(false);
                                    }}
                                    onNavigate={(year, month) => setViewDateStart(new Date(year, month, 1))}
-                                   isDateDisabled={isDateDisabled}
+                                   isDateDisabled={isStartDateDisabled}
                                    label="Data de Retirada"
                                  />
                               </div>
@@ -373,7 +374,7 @@ export default function Home() {
                                      setIsCalendarEndOpen(false);
                                    }}
                                    onNavigate={(year, month) => setViewDateEnd(new Date(year, month, 1))}
-                                   isDateDisabled={isDateDisabled}
+                                   isDateDisabled={isEndDateDisabled}
                                    label="Data de Devolução"
                                  />
                               </div>

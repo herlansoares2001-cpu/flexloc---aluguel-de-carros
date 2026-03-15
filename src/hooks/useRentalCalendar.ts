@@ -77,10 +77,23 @@ export function useRentalCalendar(plan: 'motorista' | 'pf', defaultStart = '', d
     }
   }, [plan, selectedDateStart]);
 
-  const isDateDisabled = useCallback((date: Date) => {
-    // Retorna true se for domingo (desabilita visualmente na grade antes do clique)
-    return date.getDay() === 0;
+  // Regras para o calendário de Retirada
+  const isStartDateDisabled = useCallback((date: Date) => {
+    return date.getDay() === 0; // Bloqueia apenas domingos
   }, []);
+
+  // Regras para o calendário de Devolução
+  const isEndDateDisabled = useCallback((date: Date) => {
+    if (date.getDay() === 0) return true; // Bloqueia domingos
+    
+    // Bloqueia qualquer data anterior à data de retirada selecionada
+    if (selectedDateStart) {
+      const startZeroed = new Date(selectedDateStart).setHours(0,0,0,0);
+      const currentZeroed = new Date(date).setHours(0,0,0,0);
+      if (currentZeroed < startZeroed) return true;
+    }
+    return false;
+  }, [selectedDateStart]);
 
   const validateDates = (timeStart?: string, timeEnd?: string) => {
     const result = validateRental({
@@ -116,7 +129,8 @@ export function useRentalCalendar(plan: 'motorista' | 'pf', defaultStart = '', d
     setViewDateEnd,
     handleSelectStart,
     handleSelectEnd,
-    isDateDisabled,
+    isStartDateDisabled,
+    isEndDateDisabled,
     error,
     setError,
     warning,

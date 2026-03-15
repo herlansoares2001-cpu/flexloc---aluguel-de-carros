@@ -52,7 +52,8 @@ export default function Book() {
     setViewDateEnd,
     handleSelectStart,
     handleSelectEnd,
-    isDateDisabled,
+    isStartDateDisabled,
+    isEndDateDisabled,
     error,
     setError,
     warning,
@@ -528,7 +529,7 @@ Aguardo retorno para finalizar!`;
                             setIsCalendarStartOpen(false);
                           }}
                           onNavigate={(year, month) => setViewDateStart(new Date(year, month, 1))}
-                          isDateDisabled={isDateDisabled}
+                          isDateDisabled={isStartDateDisabled}
                           label="Data de Retirada"
                         />
                       </div>
@@ -597,7 +598,7 @@ Aguardo retorno para finalizar!`;
                             setIsCalendarEndOpen(false);
                           }}
                           onNavigate={(year, month) => setViewDateEnd(new Date(year, month, 1))}
-                          isDateDisabled={isDateDisabled}
+                          isDateDisabled={isEndDateDisabled}
                           label="Data de Devolução"
                         />
                       </div>
