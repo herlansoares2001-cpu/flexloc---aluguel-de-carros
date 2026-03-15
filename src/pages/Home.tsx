@@ -13,7 +13,7 @@ export default function Home() {
   const [isLocationOpen, setIsLocationOpen] = useState(false);
   const [isTimeStartOpen, setIsTimeStartOpen] = useState(false);
   const [isTimeEndOpen, setIsTimeEndOpen] = useState(false);
-  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+
   const [timeStart, setTimeStart] = useState('10:00');
   const [timeEnd, setTimeEnd] = useState('10:00');
   const [isVideoPlaying, setIsVideoPlaying] = useState(true);
@@ -212,7 +212,7 @@ export default function Home() {
               <div className="absolute -inset-20 bg-primary/10 rounded-full blur-[120px] opacity-20 pointer-events-none"></div>
               <div className="absolute -inset-1 bg-primary/20 rounded-[2.5rem] blur-2xl opacity-30 group-hover:opacity-60 transition duration-1000"></div>
               
-              <div className="glass-panel p-6 pb-8 rounded-[2rem] shadow-2xl animate-fade-in-up relative border border-white/10 backdrop-blur-3xl">
+              <div className="glass-panel p-6 pb-8 rounded-[2rem] shadow-2xl animate-fade-in-up relative border border-white/10 backdrop-blur-3xl h-fit">
                 <div className="flex flex-col gap-6">
                   <div className="space-y-3">
                     <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest ml-4 opacity-70" id="tipo-contrato-label">Tipo de Contrato</label>
@@ -374,22 +374,7 @@ export default function Home() {
                     
 
                     
-                    {/* Visual Summary and Messaging */}
-                    {dateStart && dateEnd && (
-                      <div className="mt-6 p-4 bg-white/[0.03] border border-white/10 rounded-2xl space-y-3 animate-fade-in">
-                        <div className="flex justify-between text-xs text-gray-400">
-                          <span>Retirada: {new Date(dateStart + 'T12:00:00').toLocaleDateString('pt-BR')}</span>
-                          <span>Devolução: {new Date(dateEnd + 'T12:00:00').toLocaleDateString('pt-BR')}</span>
-                        </div>
-                        <div className="text-center font-bold text-white">
-                          Total: {totalDays > 0 ? (
-                            plan === 'pf' ? `${totalDays} dias` : `${Math.round(totalDays / 7)} semana(s)`
-                          ) : (
-                            'Selecione as datas'
-                          )}
-                        </div>
-                      </div>
-                    )}
+
                     
                     {error && (
                       <p className="text-red-500 text-xs font-bold text-center mt-2 p-3 bg-red-500/10 rounded-xl border border-red-500/20">{error}</p>
@@ -432,7 +417,7 @@ export default function Home() {
         </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-12 mt-16 pb-12">
-            {CARS.filter(c => plan === 'pf' ? c.availablePF : true).slice(0, 3).map((car, idx) => (
+            {CARS.filter(c => [2, 13, 15].includes(Number(c.id))).map((car, idx) => (
               <div key={car.id} className={`group card-glass rounded-xl p-8 pt-0 flex flex-col relative transition-all duration-500 hover:border-white/20 animate-on-scroll ${idx > 0 ? `delay-${idx * 100}` : ''}`}>
                 <div className="relative h-56 w-full -mt-12 mb-2 flex items-center justify-center z-20">
                   <img alt={car.name} decoding="async" loading="lazy" className="object-contain w-full h-full relative z-10 car-overlap drop-shadow-2xl" src={car.img || car.image} />
@@ -619,7 +604,7 @@ export default function Home() {
                 <div className="absolute -top-10 left-1/2 -translate-x-1/2 text-[120px] font-bold text-white opacity-[0.03] select-none pointer-events-none leading-none">01</div>
                 <div className="w-4 h-4 rounded-full bg-background-dark border-2 border-primary mb-8 relative z-20 shadow-[0_0_15px_rgba(230,197,25,0.3)]"></div>
                 <div className="w-full h-48 bg-white/[0.02] rounded-lg mb-8 flex items-center justify-center border border-white/5 backdrop-blur-sm group-hover:border-white/10 transition-colors duration-500">
-                    <span className="material-symbols-outlined text-gray-500 text-6xl font-thin group-hover:text-primary transition-colors duration-500">smartphone</span>
+                    <span className="material-symbols-outlined text-white/30 text-7xl md:text-[100px] lg:text-[140px] leading-none group-hover:text-primary transition-all duration-500" style={{ fontVariationSettings: "'wght' 300, 'opsz' 48" }}>smartphone</span>
                 </div>
                 <h3 className="text-white text-xl md:text-2xl font-medium mb-3 tracking-tight">Escolha seu veículo</h3>
                 <p className="text-gray-400 text-base leading-relaxed font-light font-sans max-w-xs mx-auto">
@@ -631,7 +616,7 @@ export default function Home() {
                 <div className="w-4 h-4 rounded-full bg-background-dark border-2 border-primary mb-8 relative z-20 shadow-[0_0_15px_rgba(230,197,25,0.3)]"></div>
                 <div className="w-full h-48 bg-white/[0.02] rounded-lg mb-8 flex items-center justify-center border border-white/5 backdrop-blur-sm group-hover:border-white/10 transition-colors duration-500">
                     <div className="relative">
-                        <span className="material-symbols-outlined text-gray-500 text-6xl font-thin group-hover:text-primary transition-colors duration-500">fingerprint</span>
+                        <span className="material-symbols-outlined text-white/30 text-7xl md:text-[100px] lg:text-[140px] leading-none group-hover:text-primary transition-all duration-500" style={{ fontVariationSettings: "'wght' 300, 'opsz' 48" }}>fingerprint</span>
                         <span className="material-symbols-outlined text-primary text-xl absolute -top-2 -right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-100">verified_user</span>
                     </div>
                 </div>
@@ -644,7 +629,7 @@ export default function Home() {
                 <div className="absolute -top-10 left-1/2 -translate-x-1/2 text-[120px] font-bold text-white opacity-[0.03] select-none pointer-events-none leading-none">03</div>
                 <div className="w-4 h-4 rounded-full bg-background-dark border-2 border-primary mb-8 relative z-20 shadow-[0_0_15px_rgba(230,197,25,0.3)]"></div>
                 <div className="w-full h-48 bg-white/[0.02] rounded-lg mb-8 flex items-center justify-center border border-white/5 backdrop-blur-sm group-hover:border-white/10 transition-colors duration-500">
-                    <span className="material-symbols-outlined text-gray-500 text-6xl font-thin group-hover:text-primary transition-colors duration-500">key</span>
+                    <span className="material-symbols-outlined text-white/30 text-7xl md:text-[100px] lg:text-[140px] leading-none group-hover:text-primary transition-all duration-500" style={{ fontVariationSettings: "'wght' 300, 'opsz' 48" }}>key</span>
                 </div>
                 <h3 className="text-white text-xl md:text-2xl font-medium mb-3 tracking-tight">Aprovação rápida</h3>
                 <p className="text-gray-400 text-base leading-relaxed font-light font-sans max-w-xs mx-auto">
@@ -655,7 +640,7 @@ export default function Home() {
                 <div className="absolute -top-10 left-1/2 -translate-x-1/2 text-[120px] font-bold text-white opacity-[0.03] select-none pointer-events-none leading-none">04</div>
                 <div className="w-4 h-4 rounded-full bg-background-dark border-2 border-primary mb-8 relative z-20 shadow-[0_0_15px_rgba(230,197,25,0.3)]"></div>
                 <div className="w-full h-48 bg-white/[0.02] rounded-lg mb-8 flex items-center justify-center border border-white/5 backdrop-blur-sm group-hover:border-white/10 transition-colors duration-500">
-                    <span className="material-symbols-outlined text-gray-500 text-6xl font-thin group-hover:text-primary transition-colors duration-500">car_rental</span>
+                    <span className="material-symbols-outlined text-white/30 text-7xl md:text-[100px] lg:text-[140px] leading-none group-hover:text-primary transition-all duration-500" style={{ fontVariationSettings: "'wght' 300, 'opsz' 48" }}>car_rental</span>
                 </div>
                 <h3 className="text-white text-xl md:text-2xl font-medium mb-3 tracking-tight">Retire seu carro</h3>
                 <p className="text-gray-400 text-base leading-relaxed font-light font-sans max-w-xs mx-auto">
