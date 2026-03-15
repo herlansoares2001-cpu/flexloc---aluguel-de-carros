@@ -33,10 +33,17 @@ export default function Book() {
   const [insuranceRate, setInsuranceRate] = useState(45);
   const [mileageFranchise, setMileageFranchise] = useState<'k3' | 'k6' | 'free'>('k3');
 
+  // Helper para normalizar datas para meia-noite local (evita pular dias)
+  const normalizeDate = (d: string | Date) => {
+    if (!d) return null;
+    const date = new Date(d);
+    return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  };
+
   const [dateStart, setDateStart] = useState(qDateStart);
   const [dateEnd, setDateEnd] = useState(qDateEnd);
-  const [selectedDateStart, setSelectedDateStart] = useState<Date | null>(qDateStart ? new Date(qDateStart + 'T12:00:00') : null);
-  const [selectedDateEnd, setSelectedDateEnd] = useState<Date | null>(qDateEnd ? new Date(qDateEnd + 'T12:00:00') : null);
+  const [selectedDateStart, setSelectedDateStart] = useState<Date | null>(normalizeDate(qDateStart));
+  const [selectedDateEnd, setSelectedDateEnd] = useState<Date | null>(normalizeDate(qDateEnd));
 
   const [viewDateStart, setViewDateStart] = useState(selectedDateStart || new Date());
   const [viewDateEnd, setViewDateEnd] = useState(selectedDateEnd || new Date());
@@ -69,11 +76,17 @@ export default function Book() {
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (calendarStartRef.current && !calendarStartRef.current.contains(event.target as Node)) {
+      const target = event.target as Node;
+      if (calendarStartRef.current && !calendarStartRef.current.contains(target)) {
         setIsCalendarStartOpen(false);
       }
-      if (calendarEndRef.current && !calendarEndRef.current.contains(event.target as Node)) {
+      if (calendarEndRef.current && !calendarEndRef.current.contains(target)) {
         setIsCalendarEndOpen(false);
+      }
+      // Fechamento dos menus de hora se clicar fora
+      if (! (target instanceof HTMLElement && target.closest('.time-picker-container'))) {
+        setIsTimeStartOpen(false);
+        setIsTimeEndOpen(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -89,36 +102,40 @@ export default function Book() {
   const error = useMemo(() => {
     if (!selectedDateStart || !selectedDateEnd) return null;
     if (selectedDateEnd < selectedDateStart) return "A devolução não pode ser anterior à retirada.";
-    return null;
-  }, [selectedDateStart, selectedDateEnd]);
-
-  const warning = useMemo(() => {
     if (plan === 'motorista' && totalDays > 0 && totalDays % 7 !== 0) {
-      return "Para motoristas, o aluguel funciona em ciclos de 7 dias.";
+      return "Para motoristas, o ciclo deve ser múltiplo de 7 dias.";
     }
     return null;
-  }, [plan, totalDays]);
+  }, [selectedDateStart, selectedDateEnd, plan, totalDays]);
+
+  const warning = useMemo(() => {
+    // Warnings removidos ou transformados em erros conforme regra de negócio rígida
+    return null;
+  }, []);
 
   const filteredCars = useMemo(() => {
     let result = CARS.filter(car => {
       const matchesSearch = car.name.toLowerCase().includes(search.toLowerCase());
       const matchesCat = categories.length === 0 || categories.includes(car.category);
       const matchesFeat = features.every(f => car.feats?.includes(f));
+      
       const price = plan === 'pf' ? car.priceDay : (car.pricingApp?.[location]?.[mileageFranchise] || 0);
-      return matchesSearch && matchesCat && matchesFeat && price <= maxPrice;
+      const isAvailable = price != null && price > 0;
+      
+      return matchesSearch && matchesCat && matchesFeat && price <= maxPrice && isAvailable;
     });
 
     if (sort === 'price-asc') {
       result.sort((a, b) => {
         const pA = plan === 'pf' ? a.priceDay : (a.pricingApp?.[location]?.[mileageFranchise] || 0);
         const pB = plan === 'pf' ? b.priceDay : (b.pricingApp?.[location]?.[mileageFranchise] || 0);
-        return pA - pB;
+        return (pA || 0) - (pB || 0);
       });
     } else if (sort === 'price-desc') {
       result.sort((a, b) => {
         const pA = plan === 'pf' ? a.priceDay : (a.pricingApp?.[location]?.[mileageFranchise] || 0);
         const pB = plan === 'pf' ? b.priceDay : (b.pricingApp?.[location]?.[mileageFranchise] || 0);
-        return pB - pA;
+        return (pB || 0) - (pA || 0);
       });
     } else {
       result.sort((a, b) => a.name.localeCompare(b.name));
@@ -131,18 +148,21 @@ export default function Book() {
     let days = totalDays;
     let carTotal = 0;
     let weeks = 0;
+    
     if (plan === 'pf') {
-      carTotal = currentCar.priceDay * days;
+      carTotal = (currentCar.priceDay || 0) * days;
     } else {
       const pricing = currentCar.pricingApp?.[location];
       const weeklyPrice = pricing?.[mileageFranchise] || 0;
-      weeks = Math.max(1, Math.round(days / 7));
+      weeks = totalDays > 0 ? Math.ceil(totalDays / 7) : 0;
       carTotal = weeklyPrice * weeks;
     }
+    
     const insRate = plan === 'pf' ? insuranceRate : 0;
     const insTotal = insRate * days;
-    const finalCarTotal = isNaN(carTotal) ? 0 : carTotal;
+    const finalCarTotal = (isNaN(carTotal) || carTotal === null) ? 0 : carTotal;
     const total = finalCarTotal + insTotal;
+    
     return { days, weeks, carTotal: finalCarTotal, insTotal, total };
   }, [totalDays, plan, currentCar, location, mileageFranchise, insuranceRate]);
 
@@ -168,12 +188,16 @@ export default function Book() {
 
   const isEndDateDisabled = useCallback((date: Date) => {
     if (!selectedDateStart) return date.getDay() === 0;
+    
     const minDate = new Date(selectedDateStart);
+    // Para motoristas, a devolução deve ser no mínimo 7 dias após
     if (plan === 'motorista') {
-      minDate.setDate(minDate.getDate() + 7);
+        minDate.setDate(minDate.getDate() + 7);
     } else {
-      minDate.setDate(minDate.getDate() + 1);
+        minDate.setDate(minDate.getDate() + 1);
     }
+
+    // Regra CRO: Bloqueio visual de domingos e datas anteriores à mínima permitida
     return date < minDate || date.getDay() === 0;
   }, [selectedDateStart, plan]);
 
@@ -266,6 +290,17 @@ Aguardo retorno!`;
         }
         .animate-gradient { animation: gradient-move 3s linear infinite; }
         @keyframes gradient-move { 0% { background-position: 0% center; } 100% { background-position: 200% center; } }
+        
+        /* Sticky Mobile CTA */
+        @media (max-width: 1023px) {
+          .mobile-sticky-cta {
+            position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;
+            background: rgba(10, 10, 10, 0.95); backdrop-filter: blur(15px);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 16px 20px; padding-bottom: calc(16px + env(safe-area-inset-bottom));
+            box-shadow: 0 -10px 40px rgba(0,0,0,0.8);
+          }
+        }
       `}</style>
       
       <div id="spotlight"></div>
@@ -432,7 +467,7 @@ Aguardo retorno!`;
                     <div className="text-right">
                       <p className="text-gray-500 text-[10px] uppercase tracking-widest mb-0.5">{plan === 'pf' ? 'Diária' : 'Semana'}</p>
                       <p className="text-primary text-xl font-bold">
-                        R$ {plan === 'pf' ? car.priceDay : car.pricingApp?.[location]?.[mileageFranchise] ?? '-'}
+                        {plan === 'pf' ? (car.priceDay ? `R$ ${car.priceDay}` : 'Sob consulta') : (car.pricingApp?.[location]?.[mileageFranchise] ? `R$ ${car.pricingApp[location][mileageFranchise]}` : 'Indisponível')}
                       </p>
                     </div>
                   </div>
@@ -538,7 +573,7 @@ Aguardo retorno!`;
 
                 <div className="space-y-1">
                   <label className="text-[9px] font-bold text-gray-500 uppercase tracking-[0.2em] ml-1">Hora</label>
-                  <div className="relative group">
+                  <div className="relative group time-picker-container">
                     <div className="absolute inset-y-0 left-2.5 flex items-center pointer-events-none text-gray-500 z-10 transition-colors group-hover:text-primary"><span className="material-symbols-outlined text-[14px]">schedule</span></div>
                     <button onClick={() => setIsTimeStartOpen(!isTimeStartOpen)} className="w-full text-left pl-8 pr-6 py-2.5 bg-white/[0.03] border border-white/10 rounded-xl text-[11px] text-white font-bold transition-all hover:bg-white/[0.05] focus:outline-none focus:border-primary/40"><span>{timeStart}</span></button>
                     {isTimeStartOpen && (
@@ -571,7 +606,7 @@ Aguardo retorno!`;
 
                 <div className="space-y-1">
                   <label className="text-[9px] font-bold text-gray-500 uppercase tracking-[0.2em] ml-1">Hora</label>
-                  <div className="relative group">
+                  <div className="relative group time-picker-container">
                     <div className="absolute inset-y-0 left-2.5 flex items-center pointer-events-none text-gray-500 z-10 transition-colors group-hover:text-primary"><span className="material-symbols-outlined text-[14px]">schedule</span></div>
                     <button onClick={() => setIsTimeEndOpen(!isTimeEndOpen)} className="w-full text-left pl-8 pr-6 py-2.5 bg-white/[0.03] border border-white/10 rounded-xl text-[11px] text-white font-bold transition-all hover:bg-white/[0.05] focus:outline-none focus:border-primary/40"><span>{timeEnd}</span></button>
                     {isTimeEndOpen && (
@@ -641,17 +676,34 @@ Aguardo retorno!`;
                   </span>
                 </div>
 
-                <button 
-                  onClick={handleConfirm} 
-                  disabled={!!error || !dateStart || !dateEnd}
-                  className="btn-confirm w-full py-4 rounded-xl flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-[0.15em] shadow-xl disabled:opacity-50 disabled:grayscale transition-all hover:scale-[1.02] active:scale-98"
-                >
-                  <span>Confirmar Reserva</span>
-                  <span className="material-symbols-outlined text-[18px]">whatsapp</span>
-                </button>
+                <div className="hidden lg:block">
+                  <button 
+                    onClick={handleConfirm} 
+                    disabled={!!error || !selectedDateStart || !selectedDateEnd}
+                    className="btn-confirm w-full py-4 rounded-xl flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-[0.15em] shadow-xl disabled:opacity-50 disabled:grayscale transition-all hover:scale-[1.02] active:scale-98"
+                  >
+                    <span>Confirmar Reserva</span>
+                    <span className="material-symbols-outlined text-[18px]">whatsapp</span>
+                  </button>
+                </div>
                 
-                {error && <p className="text-[9px] font-bold text-red-500 text-center animate-pulse">{error}</p>}
-                {warning && !error && <p className="text-[9px] font-bold text-yellow-500 text-center">{warning}</p>}
+                {/* Mobile Sticky Footer */}
+                <div className="lg:hidden mobile-sticky-cta flex items-center justify-between gap-4">
+                  <div className="flex flex-col">
+                    <span className="text-[9px] font-black text-gray-500 uppercase tracking-widest leading-none mb-1">Total Estimado</span>
+                    <span className="text-xl font-black text-white leading-none">R$ {totals.total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+                  </div>
+                  <button 
+                    onClick={handleConfirm} 
+                    disabled={!!error || !selectedDateStart || !selectedDateEnd}
+                    className="btn-confirm flex-1 py-3.5 px-4 rounded-xl flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-widest shadow-xl disabled:opacity-50 disabled:grayscale"
+                  >
+                    <span>Confirmar</span>
+                    <span className="material-symbols-outlined text-[16px]">whatsapp</span>
+                  </button>
+                </div>
+                
+                {error && <p className="text-[9px] font-bold text-red-500 text-center animate-pulse mt-2">{error}</p>}
               </div>
 
             </div>
