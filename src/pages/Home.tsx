@@ -100,29 +100,31 @@ export default function Home() {
       }
     };
 
-    const autoLoopMobile = () => {
-      if (window.innerWidth >= 768) return;
-      const containers = document.querySelectorAll('.auto-loop-mobile');
-      containers.forEach(container => {
-        // Ignora se o usuário estiver tocando no elemento
-        if (container.getAttribute('data-is-touching') === 'true') return;
-
-        const maxScroll = container.scrollWidth - container.clientWidth;
-        if (container.scrollLeft >= maxScroll - 20) {
-          container.scrollTo({ left: 0, behavior: 'smooth' });
-        } else {
-          const width = container.clientWidth;
-          const nextScroll = Math.floor((container.scrollLeft + width) / width) * width;
-          container.scrollTo({ left: nextScroll, behavior: 'smooth' });
-        }
-      });
+    let requestRef: number;
+    const animate = () => {
+      if (window.innerWidth < 768) {
+        const containers = document.querySelectorAll('.auto-loop-mobile');
+        containers.forEach(container => {
+          if (container.getAttribute('data-is-touching') === 'true') return;
+          
+          container.scrollLeft += 0.5; // Velocidade constante suave
+          
+          // Se chegou na metade (onde os itens duplicados começam), volta pro início
+          if (container.scrollLeft >= container.scrollWidth / 2) {
+             container.scrollLeft = 0;
+          }
+        });
+      }
+      requestRef = requestAnimationFrame(animate);
     };
+
+    requestRef = requestAnimationFrame(animate);
 
     const handleTouchStart = (e: any) => e.currentTarget.setAttribute('data-is-touching', 'true');
     const handleTouchEnd = (e: any) => {
-      // Pequeno delay para retomar após soltar
       setTimeout(() => {
-        e.target.closest('.auto-loop-mobile')?.setAttribute('data-is-touching', 'false');
+        const target = e.target.closest('.auto-loop-mobile');
+        if (target) target.setAttribute('data-is-touching', 'false');
       }, 2000);
     };
 
@@ -132,14 +134,12 @@ export default function Home() {
       c.addEventListener('touchend', handleTouchEnd);
     });
 
-    const loopInterval = setInterval(autoLoopMobile, 4000);
-
     document.addEventListener('mousemove', handleMouseMove);
 
     return () => {
       document.removeEventListener('mousemove', handleMouseMove);
       observer.disconnect();
-      clearInterval(loopInterval);
+      cancelAnimationFrame(requestRef);
       containers.forEach(c => {
         c.removeEventListener('touchstart', handleTouchStart);
         c.removeEventListener('touchend', handleTouchEnd);
@@ -460,9 +460,9 @@ export default function Home() {
           </p>
         </div>
 
-        <div className="flex overflow-x-auto snap-x snap-mandatory no-scrollbar md:grid md:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-12 mt-0 pt-32 pb-12 -mx-6 px-6 md:mx-auto md:overflow-visible md:px-0 auto-loop-mobile">
-          {CARS.filter(c => [2, 13, 15].includes(Number(c.id))).map((car, idx) => (
-            <div key={car.id} className={`group card-glass rounded-xl p-8 pt-0 flex flex-col relative transition-all duration-500 hover:border-white/20 animate-on-scroll snap-center shrink-0 w-[85vw] sm:w-[380px] md:w-auto ${idx > 0 ? `delay-${idx * 100}` : ''}`}>
+        <div className="flex overflow-x-auto no-scrollbar md:grid md:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-12 mt-0 pt-32 pb-12 -mx-6 px-6 md:mx-auto md:overflow-visible md:px-0 auto-loop-mobile">
+          {[...CARS.filter(c => [2, 13, 15].includes(Number(c.id))), ...CARS.filter(c => [2, 13, 15].includes(Number(c.id)))].map((car, idx) => (
+            <div key={`${car.id}-${idx}`} className={`group card-glass rounded-xl p-8 pt-0 flex flex-col relative transition-all duration-500 hover:border-white/20 animate-on-scroll shrink-0 w-[85vw] sm:w-[380px] md:w-auto ${idx > 0 && idx < 3 ? `delay-${idx * 100}` : ''}`}>
               <div className="relative h-64 w-full -mt-16 mb-2 flex items-center justify-center z-20">
                 <img alt={car.name} decoding="async" loading="lazy" className="object-contain w-full h-full relative z-10 car-overlap drop-shadow-2xl" src={car.img || car.image} />
               </div>
@@ -591,51 +591,28 @@ export default function Home() {
                 Criamos um modelo de locação simples, acessível e eficiente para quem precisa de mobilidade com economia.
             </p>
         </div>
-        <div className="flex overflow-x-auto snap-x snap-mandatory no-scrollbar md:grid md:grid-cols-2 lg:grid-cols-4 gap-8 pb-4 -mx-6 px-6 md:mx-auto md:px-0 auto-loop-mobile">
-            <div className="group flex flex-col gap-6 animate-on-scroll snap-center shrink-0 w-[80vw] sm:w-[300px] md:w-auto">
-                <div className="w-12 h-12 flex items-center justify-center rounded-full border border-white/5 bg-white/5 group-hover:border-primary/50 transition-colors duration-300">
-                    <span className="material-symbols-outlined text-primary font-light text-2xl">assignment_turned_in</span>
+        <div className="flex overflow-x-auto no-scrollbar md:grid md:grid-cols-2 lg:grid-cols-4 gap-8 pb-4 -mx-6 px-6 md:mx-auto md:px-0 auto-loop-mobile">
+            {[1, 2, 3, 4, 5, 6, 7, 8].map((item, idx) => {
+              const content = [
+                { icon: 'assignment_turned_in', title: 'Sem Burocracia', desc: 'Nosso processo é rápido e simples. Nada de filas ou processos complicados para conseguir seu veículo.' },
+                { icon: 'local_gas_station', title: 'Economia com GNV', desc: 'Todos os carros possuem GNV de 5ª geração, permitindo economia de até 40% no combustível para seu lucro ser maior.' },
+                { icon: 'build', title: 'Carros Revisados', desc: 'Todos os veículos passam por manutenção preventiva constante para garantir segurança e confiabilidade.' },
+                { icon: 'trending_up', title: 'Trabalho ou Uso Pessoal', desc: 'Você pode usar seu carro Flexloc para trabalhar com aplicativos, fazer entregas, viajar ou usar no dia a dia. Liberdade total para dirigir.' }
+              ][idx % 4];
+              return (
+                <div key={idx} className={`group flex flex-col gap-6 animate-on-scroll shrink-0 w-[80vw] sm:w-[300px] md:w-auto ${idx < 4 ? `delay-${idx * 100}` : ''}`}>
+                    <div className="w-12 h-12 flex items-center justify-center rounded-full border border-white/5 bg-white/5 group-hover:border-primary/50 transition-colors duration-300">
+                        <span className="material-symbols-outlined text-primary font-light text-2xl">{content.icon}</span>
+                    </div>
+                    <div>
+                        <h3 className="text-white text-xl md:text-2xl font-medium mb-3 tracking-wide font-sans text-gradient-animate">{content.title}</h3>
+                        <p className="text-gray-400 text-base leading-relaxed font-light font-sans">
+                            {content.desc}
+                        </p>
+                    </div>
                 </div>
-                <div>
-                    <h3 className="text-white text-xl md:text-2xl font-medium mb-3 tracking-wide font-sans text-gradient-animate">Sem Burocracia</h3>
-                    <p className="text-gray-400 text-base leading-relaxed font-light font-sans">
-                        Nosso processo é rápido e simples. Nada de filas ou processos complicados para conseguir seu veículo.
-                    </p>
-                </div>
-            </div>
-            <div className="group flex flex-col gap-6 animate-on-scroll delay-100 snap-center shrink-0 w-[80vw] sm:w-[300px] md:w-auto">
-                <div className="w-12 h-12 flex items-center justify-center rounded-full border border-white/5 bg-white/5 group-hover:border-primary/50 transition-colors duration-300">
-                    <span className="material-symbols-outlined text-primary font-light text-2xl">local_gas_station</span>
-                </div>
-                <div>
-                    <h3 className="text-white text-xl md:text-2xl font-medium mb-3 tracking-wide font-sans text-gradient-animate">Economia com GNV</h3>
-                    <p className="text-gray-400 text-base leading-relaxed font-light font-sans">
-                        Todos os carros possuem GNV de 5ª geração, permitindo economia de até 40% no combustível para seu lucro ser maior.
-                    </p>
-                </div>
-            </div>
-            <div className="group flex flex-col gap-6 animate-on-scroll delay-200 snap-center shrink-0 w-[80vw] sm:w-[300px] md:w-auto">
-                <div className="w-12 h-12 flex items-center justify-center rounded-full border border-white/5 bg-white/5 group-hover:border-primary/50 transition-colors duration-300">
-                    <span className="material-symbols-outlined text-primary font-light text-2xl">build</span>
-                </div>
-                <div>
-                    <h3 className="text-white text-xl md:text-2xl font-medium mb-3 tracking-wide font-sans text-gradient-animate">Carros Revisados</h3>
-                    <p className="text-gray-400 text-base leading-relaxed font-light font-sans">
-                        Todos os veículos passam por manutenção preventiva constante para garantir segurança e confiabilidade.
-                    </p>
-                </div>
-            </div>
-            <div className="group flex flex-col gap-6 animate-on-scroll delay-300 snap-center shrink-0 w-[80vw] sm:w-[300px] md:w-auto">
-                <div className="w-12 h-12 flex items-center justify-center rounded-full border border-white/5 bg-white/5 group-hover:border-primary/50 transition-colors duration-300">
-                    <span className="material-symbols-outlined text-primary font-light text-2xl">trending_up</span>
-                </div>
-                <div>
-                    <h3 className="text-white text-xl md:text-2xl font-medium mb-3 tracking-wide font-sans text-gradient-animate">Trabalho ou Uso Pessoal</h3>
-                    <p className="text-gray-400 text-base leading-relaxed font-light font-sans">
-                        Você pode usar seu carro Flexloc para trabalhar com aplicativos, fazer entregas, viajar ou usar no dia a dia. Liberdade total para dirigir.
-                    </p>
-                </div>
-            </div>
+              );
+            })}
         </div>
       </section>
 
@@ -649,70 +626,32 @@ export default function Home() {
                 Alugar um veículo com a Flexloc é simples e rápido.
             </p>
         </div>
-        <div className="relative flex overflow-x-auto snap-x snap-mandatory no-scrollbar md:grid md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8 mt-4 pt-12 pb-4 -mx-6 px-6 md:mx-auto md:overflow-visible md:px-0 auto-loop-mobile">
+        <div className="relative flex overflow-x-auto no-scrollbar md:grid md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8 mt-4 pt-12 pb-4 -mx-6 px-6 md:mx-auto md:overflow-visible md:px-0 auto-loop-mobile">
             <div className="hidden md:block absolute top-[60px] left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent z-0"></div>
-            <div className="relative group z-10 flex flex-col items-center text-center animate-on-scroll snap-center shrink-0 w-[80vw] sm:w-[300px] md:w-auto">
-                <div className="absolute -top-10 left-1/2 -translate-x-1/2 text-[120px] font-bold text-white opacity-[0.03] select-none pointer-events-none leading-none">01</div>
-                <div className="w-4 h-4 rounded-full bg-background-dark border-2 border-primary mb-8 relative z-20 shadow-[0_0_15px_rgba(230,197,25,0.3)]"></div>
-                <div className="w-full h-48 bg-white/[0.02] rounded-lg mb-8 flex items-center justify-center border border-white/5 backdrop-blur-sm group-hover:border-white/10 transition-colors duration-500">
-                    <span className="material-symbols-outlined text-white/30 leading-none group-hover:text-primary transition-all duration-500" 
-                          style={{ fontSize: '56px', fontVariationSettings: "'wght' 300, 'opsz' 48" }}>
-                      smartphone
-                    </span>
-                </div>
-                <h3 className="text-white text-xl md:text-2xl font-medium mb-3 tracking-tight">Escolha seu veículo</h3>
-                <p className="text-gray-400 text-base leading-relaxed font-light font-sans max-w-xs mx-auto">
-                    Fale com um de nossos consultores e descubra qual modelo atende melhor sua necessidade.
-                </p>
-            </div>
-            <div className="relative group z-10 flex flex-col items-center text-center animate-on-scroll delay-100 snap-center shrink-0 w-[80vw] sm:w-[300px] md:w-auto">
-                <div className="absolute -top-10 left-1/2 -translate-x-1/2 text-[120px] font-bold text-white opacity-[0.03] select-none pointer-events-none leading-none">02</div>
-                <div className="w-4 h-4 rounded-full bg-background-dark border-2 border-primary mb-8 relative z-20 shadow-[0_0_15px_rgba(230,197,25,0.3)]"></div>
-                <div className="w-full h-48 bg-white/[0.02] rounded-lg mb-8 flex items-center justify-center border border-white/5 backdrop-blur-sm group-hover:border-white/10 transition-colors duration-500">
-                    <div className="relative">
+            {[1, 2, 3, 4, 5, 6, 7, 8].map((item, idx) => {
+              const step = [
+                { num: '01', icon: 'smartphone', title: 'Escolha seu veículo', desc: 'Fale com um de nossos consultores e descubra qual modelo atende melhor sua necessidade.' },
+                { num: '02', icon: 'fingerprint', title: 'Envie seus documentos', desc: 'Basta enviar CNH digital, comprovante de endereço e print do tempo no app (caso seja motorista).' },
+                { num: '03', icon: 'key', title: 'Aprovação rápida', desc: 'Nossa equipe analisa seus dados rapidamente e a aprovação pode acontecer em até 30 minutos.' },
+                { num: '04', icon: 'car_rental', title: 'Retire seu carro', desc: 'Com o cadastro aprovado e veículo disponível, é só retirar e começar a dirigir.' }
+              ][idx % 4];
+              return (
+                <div key={idx} className={`relative group z-10 flex flex-col items-center text-center animate-on-scroll shrink-0 w-[80vw] sm:w-[300px] md:w-auto ${idx < 4 ? `delay-${idx * 100}` : ''}`}>
+                    <div className="absolute -top-10 left-1/2 -translate-x-1/2 text-[120px] font-bold text-white opacity-[0.03] select-none pointer-events-none leading-none">{step.num}</div>
+                    <div className="w-4 h-4 rounded-full bg-background-dark border-2 border-primary mb-8 relative z-20 shadow-[0_0_15px_rgba(230,197,25,0.3)]"></div>
+                    <div className="w-full h-48 bg-white/[0.02] rounded-lg mb-8 flex items-center justify-center border border-white/5 backdrop-blur-sm group-hover:border-white/10 transition-colors duration-500">
                         <span className="material-symbols-outlined text-white/30 leading-none group-hover:text-primary transition-all duration-500" 
                               style={{ fontSize: '56px', fontVariationSettings: "'wght' 300, 'opsz' 48" }}>
-                          fingerprint
-                        </span>
-                        <span className="material-symbols-outlined text-primary absolute -top-4 -right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-100 bg-background-dark rounded-full" 
-                              style={{ fontSize: '22px' }}>
-                          verified_user
+                          {step.icon}
                         </span>
                     </div>
+                    <h3 className="text-white text-xl md:text-2xl font-medium mb-3 tracking-tight">{step.title}</h3>
+                    <p className="text-gray-400 text-base leading-relaxed font-light font-sans max-w-xs mx-auto">
+                        {step.desc}
+                    </p>
                 </div>
-                <h3 className="text-white text-xl md:text-2xl font-medium mb-3 tracking-tight">Envie seus documentos</h3>
-                <p className="text-gray-400 text-base leading-relaxed font-light font-sans max-w-xs mx-auto">
-                    Basta enviar CNH digital, comprovante de endereço e print do tempo no app (caso seja motorista).
-                </p>
-            </div>
-            <div className="relative group z-10 flex flex-col items-center text-center animate-on-scroll delay-200 snap-center shrink-0 w-[80vw] sm:w-[300px] md:w-auto">
-                <div className="absolute -top-10 left-1/2 -translate-x-1/2 text-[120px] font-bold text-white opacity-[0.03] select-none pointer-events-none leading-none">03</div>
-                <div className="w-4 h-4 rounded-full bg-background-dark border-2 border-primary mb-8 relative z-20 shadow-[0_0_15px_rgba(230,197,25,0.3)]"></div>
-                <div className="w-full h-48 bg-white/[0.02] rounded-lg mb-8 flex items-center justify-center border border-white/5 backdrop-blur-sm group-hover:border-white/10 transition-colors duration-500">
-                    <span className="material-symbols-outlined text-white/30 leading-none group-hover:text-primary transition-all duration-500" 
-                          style={{ fontSize: '56px', fontVariationSettings: "'wght' 300, 'opsz' 48" }}>
-                      key
-                    </span>
-                </div>
-                <h3 className="text-white text-xl md:text-2xl font-medium mb-3 tracking-tight">Aprovação rápida</h3>
-                <p className="text-gray-400 text-base leading-relaxed font-light font-sans max-w-xs mx-auto">
-                    Nossa equipe analisa seus dados rapidamente e a aprovação pode acontecer em até 30 minutos.
-                </p>
-            </div>
-            <div className="relative group z-10 flex flex-col items-center text-center animate-on-scroll delay-300 snap-center shrink-0 w-[80vw] sm:w-[300px] md:w-auto">
-                <div className="absolute -top-10 left-1/2 -translate-x-1/2 text-[120px] font-bold text-white opacity-[0.03] select-none pointer-events-none leading-none">04</div>
-                <div className="w-4 h-4 rounded-full bg-background-dark border-2 border-primary mb-8 relative z-20 shadow-[0_0_15px_rgba(230,197,25,0.3)]"></div>
-                <div className="w-full h-48 bg-white/[0.02] rounded-lg mb-8 flex items-center justify-center border border-white/5 backdrop-blur-sm group-hover:border-white/10 transition-colors duration-500">
-                    <span className="material-symbols-outlined text-white/30 leading-none group-hover:text-primary transition-all duration-500" 
-                          style={{ fontSize: '56px', fontVariationSettings: "'wght' 300, 'opsz' 48" }}>
-                      car_rental
-                    </span>
-                </div>
-                <h3 className="text-white text-xl md:text-2xl font-medium mb-3 tracking-tight">Retire seu carro</h3>
-                <p className="text-gray-400 text-base leading-relaxed font-light font-sans max-w-xs mx-auto">
-                    Com o cadastro aprovado e veículo disponível, é só retirar e começar a dirigir.
-                </p>
-            </div>
+              );
+            })}
         </div>
       </section>
 
@@ -733,42 +672,27 @@ export default function Home() {
           </p>
         </div>
 
-        <div className="relative z-10 max-w-[1400px] mx-auto flex overflow-x-auto snap-x snap-mandatory no-scrollbar md:grid md:grid-cols-3 gap-6 lg:gap-8 mb-16 md:overflow-visible auto-loop-mobile">
-          <div className="card-glass p-8 rounded-[2rem] border border-white/5 flex flex-col items-start gap-6 hover:border-primary/20 transition-all duration-500 group snap-center shrink-0 w-[85vw] sm:w-[380px] md:w-auto">
-            <div className="w-12 h-12 flex items-center justify-center rounded-xl bg-white/5 text-primary group-hover:scale-110 transition-transform">
-              <span className="material-symbols-outlined font-light fill-current">groups</span>
-            </div>
-            <div>
-              <h3 className="text-white text-2xl lg:text-3xl font-bold mb-4">+3000 Clientes</h3>
-              <p className="text-gray-400 text-sm leading-relaxed font-sans">
-                Atendidos com excelência em nossas unidades de Feira de Santana e Salvador, ajudando a movimentar a economia local.
-              </p>
-            </div>
-          </div>
-
-          <div className="card-glass p-8 rounded-[2rem] border border-white/5 flex flex-col items-start gap-6 hover:border-primary/20 transition-all duration-500 group snap-center shrink-0 w-[85vw] sm:w-[380px] md:w-auto">
-            <div className="w-12 h-12 flex items-center justify-center rounded-xl bg-white/5 text-primary group-hover:scale-110 transition-transform">
-              <span className="material-symbols-outlined font-light fill-current">directions_car</span>
-            </div>
-            <div>
-              <h3 className="text-white text-2xl lg:text-3xl font-bold mb-4">+100 Veículos</h3>
-              <p className="text-gray-400 text-sm leading-relaxed font-sans">
-                Uma frota diversificada e sempre revisada, equipada com GNV para garantir o melhor custo-benefício do mercado.
-              </p>
-            </div>
-          </div>
-
-          <div className="card-glass p-8 rounded-[2rem] border border-white/5 flex flex-col items-start gap-6 hover:border-primary/20 transition-all duration-500 group snap-center shrink-0 w-[85vw] sm:w-[380px] md:w-auto">
-            <div className="w-12 h-12 flex items-center justify-center rounded-xl bg-white/5 text-primary group-hover:scale-110 transition-transform">
-              <span className="material-symbols-outlined font-light fill-current">location_on</span>
-            </div>
-            <div>
-              <h3 className="text-white text-2xl lg:text-3xl font-bold mb-4">Unidades</h3>
-              <p className="text-gray-400 text-sm leading-relaxed font-sans">
-                Atendimento especializado em Feira de Santana e Salvador.
-              </p>
-            </div>
-          </div>
+        <div className="relative z-10 max-w-[1400px] mx-auto flex overflow-x-auto no-scrollbar md:grid md:grid-cols-3 gap-6 lg:gap-8 mb-16 md:overflow-visible auto-loop-mobile">
+            {[1, 2, 3, 4, 5, 6].map((item, idx) => {
+              const metric = [
+                { icon: 'groups', title: '+3000 Clientes', desc: 'Atendidos com excelência em nossas unidades de Feira de Santana e Salvador, ajudando a movimentar a economia local.' },
+                { icon: 'directions_car', title: '+100 Veículos', desc: 'Uma frota diversificada e sempre revisada, equipada com GNV para garantir o melhor custo-benefício do mercado.' },
+                { icon: 'location_on', title: 'Unidades', desc: 'Atendimento especializado em Feira de Santana e Salvador.' }
+              ][idx % 3];
+              return (
+                <div key={idx} className="card-glass p-8 rounded-[2rem] border border-white/5 flex flex-col items-start gap-6 hover:border-primary/20 transition-all duration-500 group shrink-0 w-[85vw] sm:w-[380px] md:w-auto">
+                  <div className="w-12 h-12 flex items-center justify-center rounded-xl bg-white/5 text-primary group-hover:scale-110 transition-transform">
+                    <span className="material-symbols-outlined font-light fill-current">{metric.icon}</span>
+                  </div>
+                  <div>
+                    <h3 className="text-white text-2xl lg:text-3xl font-bold mb-4">{metric.title}</h3>
+                    <p className="text-gray-400 text-sm leading-relaxed font-sans">
+                      {metric.desc}
+                    </p>
+                  </div>
+                </div>
+              );
+            })}
         </div>
 
         <div className="relative z-10 flex justify-center">
