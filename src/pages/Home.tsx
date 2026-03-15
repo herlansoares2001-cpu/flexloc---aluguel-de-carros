@@ -249,193 +249,108 @@ export default function Home() {
                   </div>
 
                   <div className="flex flex-col gap-5">
-                    <div className="space-y-2 relative">
-                      <label htmlFor="location-btn" className="text-[10px] font-bold text-gray-500 uppercase tracking-widest ml-4 opacity-70">Local de Retirada</label>
-                      <div className="relative w-full">
-                        <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none z-10">
-                          <span className={`material-symbols-outlined font-light text-xl ${isLocationOpen ? 'text-primary' : 'text-gray-500'}`}>location_on</span>
+                    <div className="space-y-4">
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] ml-2 opacity-60">Local de Retirada</label>
+                        <div className="flex p-1.5 bg-black/40 rounded-2xl border border-white/5 backdrop-blur-md shadow-inner">
+                          <button type="button" onClick={() => { setLocation('fsa'); setLocationText('Feira de Santana, BA'); }}
+                            className={`flex-1 py-3 px-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-300 ${location === 'fsa' ? 'bg-primary text-background-dark shadow-lg shadow-primary/20' : 'text-gray-500 hover:text-white'}`}>
+                            Feira de Santana
+                          </button>
+                          <button type="button" onClick={() => { setLocation('ssa'); setLocationText('Salvador, BA'); }}
+                            className={`flex-1 py-3 px-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-300 ${location === 'ssa' ? 'bg-primary text-background-dark shadow-lg shadow-primary/20' : 'text-gray-500 hover:text-white'}`}>
+                            Salvador
+                          </button>
                         </div>
-                        <button type="button" id="location-btn" onClick={() => setIsLocationOpen(!isLocationOpen)}
-                          className={`block w-full text-left pl-12 pr-10 py-4 bg-white/[0.05] border hover:border-primary/50 hover:bg-white/[0.08] rounded-2xl text-white focus:outline-none transition-all text-sm font-medium tracking-wide cursor-pointer relative z-0 ${isLocationOpen ? 'border-primary/50 ring-1 ring-primary/50' : 'border-white/10'}`}>
-                          <span>{locationText}</span>
-                        </button>
-                        <div className={`absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none z-10 text-gray-500 transition-transform duration-300 ${isLocationOpen ? 'rotate-180' : ''}`}>
-                          <span className="material-symbols-outlined font-light text-2xl">expand_more</span>
-                        </div>
-
-                        {isLocationOpen && (
-                          <div className="absolute z-50 w-full mt-2 bg-black/80 border border-white/10 rounded-2xl shadow-2xl backdrop-blur-2xl">
-                            <ul className="p-2 text-sm font-medium text-gray-400 flex flex-col gap-1">
-                              <li>
-                                <button type="button" onClick={() => { setLocation('fsa'); setLocationText('Feira de Santana, BA'); setIsLocationOpen(false); }}
-                                  className="w-full text-left px-4 py-3.5 hover:bg-primary hover:text-background-dark rounded-xl transition-all duration-300 cursor-pointer font-bold flex items-center justify-between group">
-                                  <span>Feira de Santana, BA</span>
-                                </button>
-                              </li>
-                              <li>
-                                <button type="button" onClick={() => { setLocation('ssa'); setLocationText('Salvador, BA'); setIsLocationOpen(false); }}
-                                  className="w-full text-left px-4 py-3.5 hover:bg-primary hover:text-background-dark rounded-xl transition-all duration-300 cursor-pointer font-bold flex items-center justify-between group">
-                                  <span>Salvador, BA</span>
-                                </button>
-                              </li>
-                            </ul>
-                          </div>
-                        )}
                       </div>
                     </div>
 
-                    <div className="grid gap-4">
-                      <div className="grid grid-cols-5 gap-2 items-end">
-                        <div className="col-span-3 space-y-2">
-                          <label htmlFor="date-start" className="text-[10px] font-bold text-gray-500 uppercase tracking-widest ml-4 opacity-70 flex justify-between pr-2">
-                            Retirada
-                            {tipo === 'app' ? (
-                              <span className="text-primary animate-pulse">Min. 7d</span>
-                            ) : (
-                              <span className="text-primary animate-pulse">Min. 3d</span>
-                            )}
-                          </label>
-                          <div className={`relative group/field ${isCalendarStartOpen ? 'z-50' : 'z-10'}`} ref={calendarStartRef}>
-                            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none z-10">
-                              <span className="material-symbols-outlined text-primary text-lg font-light">calendar_today</span>
-                            </div>
-                            <button
-                              id="date-start-btn"
-                              type="button"
-                              onClick={() => {
-                                setIsCalendarStartOpen(!isCalendarStartOpen);
-                                setIsCalendarEndOpen(false);
-                              }}
-                              className={`block w-full text-left pl-11 pr-2 py-4 bg-white/[0.05] border hover:border-primary/50 hover:bg-white/[0.08] rounded-2xl text-white focus:outline-none transition-all text-xs font-bold tracking-wide cursor-pointer relative z-0 ${isCalendarStartOpen ? 'border-primary/50 ring-1 ring-primary/50' : 'border-white/10'}`}
-                            >
-                              {selectedDateStart ? selectedDateStart.toLocaleDateString('pt-BR') : "Escolha a data"}
-                            </button>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-2">
+                        <label htmlFor="date-start" className="text-[10px] font-bold text-gray-500 uppercase tracking-widest ml-4 opacity-70 flex justify-between pr-2">
+                          Início
+                        </label>
+                        <div className={`relative group/field ${isCalendarStartOpen ? 'z-50' : 'z-10'}`} ref={calendarStartRef}>
+                          <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none z-10">
+                            <span className="material-symbols-outlined text-primary text-lg font-light">calendar_today</span>
+                          </div>
+                          <button
+                            id="date-start-btn"
+                            type="button"
+                            onClick={() => {
+                              setIsCalendarStartOpen(!isCalendarStartOpen);
+                              setIsCalendarEndOpen(false);
+                            }}
+                            className={`block w-full text-left pl-11 pr-2 py-4 bg-white/[0.05] border hover:border-primary/50 hover:bg-white/[0.08] rounded-2xl text-white focus:outline-none transition-all text-xs font-bold tracking-wide cursor-pointer relative z-0 ${isCalendarStartOpen ? 'border-primary/50 ring-1 ring-primary/50' : 'border-white/10'}`}
+                          >
+                            {selectedDateStart ? selectedDateStart.toLocaleDateString('pt-BR') : "Data"}
+                          </button>
 
-                            {isCalendarStartOpen && (
-                              <div className="absolute z-[100] left-0 right-0 sm:right-auto mt-2 sm:w-80">
-                                  <Calendar 
-                                   currentMonth={viewDateStart.getMonth()}
-                                   currentYear={viewDateStart.getFullYear()}
-                                   startDate={selectedDateStart}
-                                   endDate={selectedDateEnd}
-                                   onSelectDate={(date) => {
-                                     handleSelectStart(date);
-                                     setIsCalendarStartOpen(false);
-                                   }}
-                                   onNavigate={(year, month) => setViewDateStart(new Date(year, month, 1))}
-                                   isDateDisabled={isStartDateDisabled}
-                                   label="Data de Retirada"
-                                 />
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                        <div className="col-span-2 space-y-2 relative">
-                          <div className="relative w-full">
-                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10">
-                              <span className={`material-symbols-outlined text-lg font-light ${isTimeStartOpen ? 'text-primary' : 'text-gray-500'}`}>schedule</span>
+                          {isCalendarStartOpen && (
+                            <div className="absolute z-[100] left-0 right-0 sm:right-auto mt-2 sm:w-80">
+                                <Calendar 
+                                 currentMonth={viewDateStart.getMonth()}
+                                 currentYear={viewDateStart.getFullYear()}
+                                 startDate={selectedDateStart}
+                                 endDate={selectedDateEnd}
+                                 onSelectDate={(date) => {
+                                   handleSelectStart(date);
+                                   setIsCalendarStartOpen(false);
+                                 }}
+                                 onNavigate={(year, month) => setViewDateStart(new Date(year, month, 1))}
+                                 isDateDisabled={isStartDateDisabled}
+                                 label="Data de Retirada"
+                               />
                             </div>
-                            <button type="button" id="time-start-btn" aria-label="Hora de Retirada" onClick={() => setIsTimeStartOpen(!isTimeStartOpen)}
-                              className={`block w-full text-left pl-10 pr-8 py-4 bg-white/[0.03] border hover:border-primary/50 hover:bg-white/[0.08] rounded-2xl text-white focus:outline-none transition-all text-xs font-bold tracking-wide cursor-pointer relative z-0 ${isTimeStartOpen ? 'border-primary/50 ring-1 ring-primary/50' : 'border-white/5'}`}>
-                              <span>{timeStart}</span>
-                            </button>
-                            <div className={`absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none z-10 text-gray-500 transition-transform duration-300 ${isTimeStartOpen ? 'rotate-180' : ''}`}>
-                              <span className="material-symbols-outlined font-light text-xl">expand_more</span>
-                            </div>
-                            {isTimeStartOpen && (
-                              <div className="absolute z-50 w-full mt-2 bg-black/80 border border-white/10 rounded-2xl shadow-2xl backdrop-blur-2xl max-h-48 overflow-y-auto custom-scrollbar">
-                                <ul className="p-2 text-sm font-medium text-gray-400 flex flex-col gap-1">
-                                  {timeOptions.map(t => (
-                                    <li key={t}>
-                                      <button type="button" onClick={() => { setTimeStart(t); setIsTimeStartOpen(false); }}
-                                        className="w-full text-center px-2 py-2 hover:text-primary hover:bg-white/5 rounded-lg transition-all duration-150 cursor-pointer">
-                                        {t}
-                                      </button>
-                                    </li>
-                                  ))}
-                                </ul>
-                              </div>
-                            )}
-                          </div>
+                          )}
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-5 gap-2 items-end">
-                        <div className="col-span-3 space-y-2">
-                          <label htmlFor="date-end" className="text-[10px] font-bold text-gray-500 uppercase tracking-widest ml-4 opacity-70 flex justify-between pr-2">
-                            Devolução
-                            {tipo === 'app' && <span className="text-primary">Ciclo Semanal</span>}
-                          </label>
-                          <div className={`relative group/field ${isCalendarEndOpen ? 'z-50' : 'z-10'}`} ref={calendarEndRef}>
-                            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none z-10">
-                              <span className="material-symbols-outlined text-primary text-lg font-light">event_repeat</span>
-                            </div>
-                            <button
-                              id="date-end-btn"
-                              type="button"
-                              onClick={() => {
-                                setIsCalendarEndOpen(!isCalendarEndOpen);
-                                setIsCalendarStartOpen(false);
-                              }}
-                              className={`block w-full text-left pl-11 pr-2 py-4 bg-white/[0.05] border hover:border-primary/50 hover:bg-white/[0.08] rounded-2xl text-white focus:outline-none transition-all text-xs font-bold tracking-wide cursor-pointer relative z-0 ${isCalendarEndOpen ? 'border-primary/50 ring-1 ring-primary/50' : 'border-white/10'}`}
-                            >
-                              {selectedDateEnd ? selectedDateEnd.toLocaleDateString('pt-BR') : "Escolha a data"}
-                            </button>
+                      <div className="space-y-2">
+                        <label htmlFor="date-end" className="text-[10px] font-bold text-gray-500 uppercase tracking-widest ml-4 opacity-70 flex justify-between pr-2">
+                          Fim
+                        </label>
+                        <div className={`relative group/field ${isCalendarEndOpen ? 'z-50' : 'z-10'}`} ref={calendarEndRef}>
+                          <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none z-10">
+                            <span className="material-symbols-outlined text-primary text-lg font-light">event_repeat</span>
+                          </div>
+                          <button
+                            id="date-end-btn"
+                            type="button"
+                            onClick={() => {
+                              setIsCalendarEndOpen(!isCalendarEndOpen);
+                              setIsCalendarStartOpen(false);
+                            }}
+                            className={`block w-full text-left pl-11 pr-2 py-4 bg-white/[0.05] border hover:border-primary/50 hover:bg-white/[0.08] rounded-2xl text-white focus:outline-none transition-all text-xs font-bold tracking-wide cursor-pointer relative z-0 ${isCalendarEndOpen ? 'border-primary/50 ring-1 ring-primary/50' : 'border-white/10'}`}
+                          >
+                            {selectedDateEnd ? selectedDateEnd.toLocaleDateString('pt-BR') : "Data"}
+                          </button>
 
-                            {isCalendarEndOpen && (
-                              <div className="absolute z-[100] left-0 right-0 sm:right-auto mt-2 sm:w-80">
-                                  <Calendar 
-                                   currentMonth={viewDateEnd.getMonth()}
-                                   currentYear={viewDateEnd.getFullYear()}
-                                   startDate={selectedDateStart}
-                                   endDate={selectedDateEnd}
-                                   onSelectDate={(date) => {
-                                     handleSelectEnd(date);
-                                     setIsCalendarEndOpen(false);
-                                   }}
-                                   onNavigate={(year, month) => setViewDateEnd(new Date(year, month, 1))}
-                                   isDateDisabled={isEndDateDisabled}
-                                   label="Data de Devolução"
-                                 />
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                        <div className="col-span-2 space-y-2 relative">
-                          <div className="relative w-full">
-                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10">
-                              <span className={`material-symbols-outlined text-lg font-light ${isTimeEndOpen ? 'text-primary' : 'text-gray-500'}`}>schedule</span>
+                          {isCalendarEndOpen && (
+                            <div className="absolute z-[100] left-0 right-0 sm:right-auto mt-2 sm:w-80 translate-x-[-50%] sm:translate-x-0 ml-[50%] sm:ml-0">
+                                <Calendar 
+                                 currentMonth={viewDateEnd.getMonth()}
+                                 currentYear={viewDateEnd.getFullYear()}
+                                 startDate={selectedDateStart}
+                                 endDate={selectedDateEnd}
+                                 onSelectDate={(date) => {
+                                   handleSelectEnd(date);
+                                   setIsCalendarEndOpen(false);
+                                 }}
+                                 onNavigate={(year, month) => setViewDateEnd(new Date(year, month, 1))}
+                                 isDateDisabled={isEndDateDisabled}
+                                 label="Data de Devolução"
+                               />
                             </div>
-                            <button type="button" id="time-end-btn" aria-label="Hora de Devolução" onClick={() => setIsTimeEndOpen(!isTimeEndOpen)}
-                              className={`block w-full text-left pl-10 pr-8 py-4 bg-white/[0.03] border hover:border-primary/50 hover:bg-white/[0.08] rounded-2xl text-white focus:outline-none transition-all text-xs font-bold tracking-wide cursor-pointer relative z-0 ${isTimeEndOpen ? 'border-primary/50 ring-1 ring-primary/50' : 'border-white/5'}`}>
-                              <span>{timeEnd}</span>
-                            </button>
-                            <div className={`absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none z-10 text-gray-500 transition-transform duration-300 ${isTimeEndOpen ? 'rotate-180' : ''}`}>
-                              <span className="material-symbols-outlined font-light text-xl">expand_more</span>
-                            </div>
-                            {isTimeEndOpen && (
-                              <div className="absolute z-50 w-full mt-2 bg-black/80 border border-white/10 rounded-2xl shadow-2xl backdrop-blur-2xl max-h-48 overflow-y-auto custom-scrollbar">
-                                <ul className="p-2 text-sm font-medium text-gray-400 flex flex-col gap-1">
-                                  {timeOptions.map(t => (
-                                    <li key={t}>
-                                      <button type="button" onClick={() => { setTimeEnd(t); setIsTimeEndOpen(false); }}
-                                        className="w-full text-center px-2 py-2 hover:text-primary hover:bg-white/5 rounded-lg transition-all duration-150 cursor-pointer">
-                                        {t}
-                                      </button>
-                                    </li>
-                                  ))}
-                                </ul>
-                              </div>
-                            )}
-                          </div>
+                          )}
                         </div>
                       </div>
                     </div>
 
                     <button onClick={goToBook}
                       className="w-full mt-4 py-5 bg-primary text-background-dark text-sm font-black uppercase tracking-[0.25em] rounded-2xl hover:bg-white hover:text-black transition-all duration-500 shadow-[0_20px_40px_rgba(255,217,0,0.3)] flex items-center justify-center gap-3 group active:scale-[0.97]">
-                      <span>Alugar Agora</span>
-                      <span className="material-symbols-outlined text-xl group-hover:translate-x-2 transition-transform">arrow_right_alt</span>
+                      <span>Ver Veículos Disponíveis</span>
+                      <span className="material-symbols-outlined text-xl group-hover:translate-x-2 transition-transform">bolt</span>
                     </button>
                     
                     {/* Visual Summary and Messaging */}

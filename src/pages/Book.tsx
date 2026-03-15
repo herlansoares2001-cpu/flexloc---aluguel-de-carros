@@ -466,42 +466,19 @@ Aguardo retorno para finalizar!`;
                 <span className="h-px flex-1 bg-white/5"></span>
               </div>
 
-              <div className="space-y-4">
-                <label htmlFor="location-btn" className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] ml-1">Local de Retirada</label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none z-10 text-primary/70">
-                    <span className="material-symbols-outlined text-[18px]">location_on</span>
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-1 opacity-60">Local de Retirada</label>
+                  <div className="flex p-1 bg-black/40 rounded-2xl border border-white/5 backdrop-blur-md shadow-inner">
+                    <button type="button" onClick={() => setLocation('fsa')}
+                      className={`flex-1 py-3 px-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-300 ${location === 'fsa' ? 'bg-primary text-background-dark shadow-lg shadow-primary/20' : 'text-gray-500 hover:text-white'}`}>
+                      FSA
+                    </button>
+                    <button type="button" onClick={() => setLocation('ssa')}
+                      className={`flex-1 py-3 px-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-300 ${location === 'ssa' ? 'bg-primary text-background-dark shadow-lg shadow-primary/20' : 'text-gray-500 hover:text-white'}`}>
+                      SSA
+                    </button>
                   </div>
-                  <button id="location-btn" onClick={() => setIsLocationOpen(!isLocationOpen)}
-                    className="w-full text-left pl-10 pr-9 py-3.5 bg-white/[0.03] border border-white/10 rounded-2xl text-sm text-white font-medium transition-all hover:bg-white/[0.06] focus:border-primary/50">
-                    <span>{location === 'fsa' ? 'Feira de Santana, BA' : 'Salvador, BA'}</span>
-                  </button>
-                  <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none z-10 text-gray-500">
-                    <span className="material-symbols-outlined text-[20px]">expand_more</span>
-                  </div>
-                  
-                  {isLocationOpen && (
-                    <div className="absolute z-50 w-full mt-2 bg-[#0A0A0A] border border-white/10 rounded-2xl shadow-2xl p-2 backdrop-blur-3xl">
-                      <ul className="space-y-1">
-                        <li>
-                          <button onClick={() => { setLocation('fsa'); setIsLocationOpen(false); }}
-                            className="w-full text-left px-4 py-3 rounded-xl hover:bg-white/5 hover:text-primary text-gray-300 transition-all flex items-center justify-between font-medium">
-                            <span>Feira de Santana, BA</span>
-                            <span className="text-[10px] uppercase font-bold text-gray-600">FSA</span>
-                          </button>
-                        </li>
-                        <li>
-                          <button onClick={() => { setLocation('ssa'); setIsLocationOpen(false); }}
-                            className="w-full text-left px-4 py-3 rounded-xl hover:bg-white/5 hover:text-primary text-gray-300 transition-all flex items-center justify-between font-medium">
-                            <span>Salvador, BA</span>
-                            <span className="text-[10px] uppercase font-bold text-gray-600">SSA</span>
-                          </button>
-                        </li>
-                      </ul>
-                    </div>
-                  )}
                 </div>
-              </div>
 
               <div className="space-y-3">
                 <label className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] ml-1">Plano de Locação</label>
@@ -555,6 +532,7 @@ Aguardo retorno para finalizar!`;
                       </div>
                     )}
                   </div>
+                  {error && error.includes('retirada') && <p className="text-[9px] text-red-500 font-bold ml-1 mt-1">{error}</p>}
                 </div>
                 <div className="space-y-2 relative">
                   <label htmlFor="time-start-btn" className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] ml-1">Hora</label>
@@ -624,6 +602,11 @@ Aguardo retorno para finalizar!`;
                       </div>
                     )}
                   </div>
+                  {((error && !error.includes('retirada')) || warning) && (
+                    <p className={`text-[9px] font-bold ml-1 mt-1 ${error ? 'text-red-500' : 'text-yellow-500'}`}>
+                      {error || warning}
+                    </p>
+                  )}
                 </div>
                 <div className="space-y-2 relative">
                   <label htmlFor="time-end-btn" className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] ml-1">Hora</label>
@@ -740,15 +723,13 @@ Aguardo retorno para finalizar!`;
                   </div>
                 </div>
 
-                {error && (
-                  <p className="text-red-500 text-xs font-bold text-center mt-2 p-3 bg-red-500/10 rounded-xl border border-red-500/20">{error}</p>
-                )}
+                <div className="h-2"></div>
 
-                {warning && (
-                  <p className="text-yellow-500 text-xs font-bold text-center mt-2 p-3 bg-yellow-500/10 rounded-xl border border-yellow-500/20">{warning}</p>
-                )}
-
-                <button onClick={handleConfirm} className="btn-confirm w-full py-3 rounded-xl flex items-center justify-center gap-2 active:scale-95 text-xs">
+                <button 
+                  onClick={handleConfirm} 
+                  disabled={!!error || !dateStart || !dateEnd}
+                  className={`btn-confirm w-full py-3 rounded-xl flex items-center justify-center gap-2 active:scale-95 text-xs transition-all ${!!error || !dateStart || !dateEnd ? 'opacity-30 grayscale cursor-not-allowed' : 'opacity-100 hover:shadow-xl hover:shadow-primary/20'}`}
+                >
                   <span>Confirmar Reserva</span>
                   <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
                 </button>
