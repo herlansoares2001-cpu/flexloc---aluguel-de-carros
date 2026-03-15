@@ -99,11 +99,51 @@ export default function Home() {
         spotlight.style.setProperty('--y', `${e.clientY}px`);
       }
     };
+
+    const autoLoopMobile = () => {
+      if (window.innerWidth >= 768) return;
+      const containers = document.querySelectorAll('.auto-loop-mobile');
+      containers.forEach(container => {
+        // Ignora se o usuário estiver tocando no elemento
+        if (container.getAttribute('data-is-touching') === 'true') return;
+
+        const maxScroll = container.scrollWidth - container.clientWidth;
+        if (container.scrollLeft >= maxScroll - 20) {
+          container.scrollTo({ left: 0, behavior: 'smooth' });
+        } else {
+          const width = container.clientWidth;
+          const nextScroll = Math.floor((container.scrollLeft + width) / width) * width;
+          container.scrollTo({ left: nextScroll, behavior: 'smooth' });
+        }
+      });
+    };
+
+    const handleTouchStart = (e: any) => e.currentTarget.setAttribute('data-is-touching', 'true');
+    const handleTouchEnd = (e: any) => {
+      // Pequeno delay para retomar após soltar
+      setTimeout(() => {
+        e.target.closest('.auto-loop-mobile')?.setAttribute('data-is-touching', 'false');
+      }, 2000);
+    };
+
+    const containers = document.querySelectorAll('.auto-loop-mobile');
+    containers.forEach(c => {
+      c.addEventListener('touchstart', handleTouchStart);
+      c.addEventListener('touchend', handleTouchEnd);
+    });
+
+    const loopInterval = setInterval(autoLoopMobile, 4000);
+
     document.addEventListener('mousemove', handleMouseMove);
 
     return () => {
       document.removeEventListener('mousemove', handleMouseMove);
       observer.disconnect();
+      clearInterval(loopInterval);
+      containers.forEach(c => {
+        c.removeEventListener('touchstart', handleTouchStart);
+        c.removeEventListener('touchend', handleTouchEnd);
+      });
     };
   }, []);
 
@@ -420,7 +460,7 @@ export default function Home() {
           </p>
         </div>
 
-        <div className="flex overflow-x-auto snap-x snap-mandatory no-scrollbar md:grid md:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-12 mt-0 pt-32 pb-12 -mx-6 px-6 md:mx-auto md:overflow-visible md:px-0">
+        <div className="flex overflow-x-auto snap-x snap-mandatory no-scrollbar md:grid md:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-12 mt-0 pt-32 pb-12 -mx-6 px-6 md:mx-auto md:overflow-visible md:px-0 auto-loop-mobile">
           {CARS.filter(c => [2, 13, 15].includes(Number(c.id))).map((car, idx) => (
             <div key={car.id} className={`group card-glass rounded-xl p-8 pt-0 flex flex-col relative transition-all duration-500 hover:border-white/20 animate-on-scroll snap-center shrink-0 w-[85vw] sm:w-[380px] md:w-auto ${idx > 0 ? `delay-${idx * 100}` : ''}`}>
               <div className="relative h-64 w-full -mt-16 mb-2 flex items-center justify-center z-20">
@@ -551,7 +591,7 @@ export default function Home() {
                 Criamos um modelo de locação simples, acessível e eficiente para quem precisa de mobilidade com economia.
             </p>
         </div>
-        <div className="flex overflow-x-auto snap-x snap-mandatory no-scrollbar md:grid md:grid-cols-2 lg:grid-cols-4 gap-8 pb-4 -mx-6 px-6 md:mx-auto md:px-0">
+        <div className="flex overflow-x-auto snap-x snap-mandatory no-scrollbar md:grid md:grid-cols-2 lg:grid-cols-4 gap-8 pb-4 -mx-6 px-6 md:mx-auto md:px-0 auto-loop-mobile">
             <div className="group flex flex-col gap-6 animate-on-scroll snap-center shrink-0 w-[80vw] sm:w-[300px] md:w-auto">
                 <div className="w-12 h-12 flex items-center justify-center rounded-full border border-white/5 bg-white/5 group-hover:border-primary/50 transition-colors duration-300">
                     <span className="material-symbols-outlined text-primary font-light text-2xl">assignment_turned_in</span>
@@ -609,7 +649,7 @@ export default function Home() {
                 Alugar um veículo com a Flexloc é simples e rápido.
             </p>
         </div>
-        <div className="relative flex overflow-x-auto snap-x snap-mandatory no-scrollbar md:grid md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8 mt-4 pt-12 pb-4 -mx-6 px-6 md:mx-auto md:overflow-visible md:px-0">
+        <div className="relative flex overflow-x-auto snap-x snap-mandatory no-scrollbar md:grid md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8 mt-4 pt-12 pb-4 -mx-6 px-6 md:mx-auto md:overflow-visible md:px-0 auto-loop-mobile">
             <div className="hidden md:block absolute top-[60px] left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent z-0"></div>
             <div className="relative group z-10 flex flex-col items-center text-center animate-on-scroll snap-center shrink-0 w-[80vw] sm:w-[300px] md:w-auto">
                 <div className="absolute -top-10 left-1/2 -translate-x-1/2 text-[120px] font-bold text-white opacity-[0.03] select-none pointer-events-none leading-none">01</div>
@@ -693,7 +733,7 @@ export default function Home() {
           </p>
         </div>
 
-        <div className="relative z-10 max-w-[1400px] mx-auto flex overflow-x-auto snap-x snap-mandatory no-scrollbar md:grid md:grid-cols-3 gap-6 lg:gap-8 mb-16 md:overflow-visible">
+        <div className="relative z-10 max-w-[1400px] mx-auto flex overflow-x-auto snap-x snap-mandatory no-scrollbar md:grid md:grid-cols-3 gap-6 lg:gap-8 mb-16 md:overflow-visible auto-loop-mobile">
           <div className="card-glass p-8 rounded-[2rem] border border-white/5 flex flex-col items-start gap-6 hover:border-primary/20 transition-all duration-500 group snap-center shrink-0 w-[85vw] sm:w-[380px] md:w-auto">
             <div className="w-12 h-12 flex items-center justify-center rounded-xl bg-white/5 text-primary group-hover:scale-110 transition-transform">
               <span className="material-symbols-outlined font-light fill-current">groups</span>
