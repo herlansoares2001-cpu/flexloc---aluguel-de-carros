@@ -420,10 +420,10 @@ export default function Home() {
           </p>
         </div>
 
-        <div className="flex overflow-x-auto snap-x snap-mandatory no-scrollbar md:grid md:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-12 mt-4 pt-12 pb-12 -mx-6 px-6 lg:mx-0 lg:px-0">
+        <div className="flex overflow-x-auto snap-x snap-mandatory no-scrollbar md:grid md:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-12 mt-0 pt-32 pb-12 -mx-6 px-6 md:mx-auto md:overflow-visible md:px-0">
           {CARS.filter(c => [2, 13, 15].includes(Number(c.id))).map((car, idx) => (
             <div key={car.id} className={`group card-glass rounded-xl p-8 pt-0 flex flex-col relative transition-all duration-500 hover:border-white/20 animate-on-scroll snap-center shrink-0 w-[85vw] sm:w-[380px] md:w-auto ${idx > 0 ? `delay-${idx * 100}` : ''}`}>
-              <div className="relative h-56 w-full -mt-12 mb-2 flex items-center justify-center z-20">
+              <div className="relative h-64 w-full -mt-16 mb-2 flex items-center justify-center z-20">
                 <img alt={car.name} decoding="async" loading="lazy" className="object-contain w-full h-full relative z-10 car-overlap drop-shadow-2xl" src={car.img || car.image} />
               </div>
               <div className="flex flex-col flex-1 relative z-10">
@@ -551,7 +551,7 @@ export default function Home() {
                 Criamos um modelo de locação simples, acessível e eficiente para quem precisa de mobilidade com economia.
             </p>
         </div>
-        <div className="flex overflow-x-auto snap-x snap-mandatory no-scrollbar md:grid md:grid-cols-2 lg:grid-cols-4 gap-8 pb-4 -mx-6 px-6 lg:mx-0 lg:px-0">
+        <div className="flex overflow-x-auto snap-x snap-mandatory no-scrollbar md:grid md:grid-cols-2 lg:grid-cols-4 gap-8 pb-4 -mx-6 px-6 md:mx-auto md:px-0">
             <div className="group flex flex-col gap-6 animate-on-scroll snap-center shrink-0 w-[80vw] sm:w-[300px] md:w-auto">
                 <div className="w-12 h-12 flex items-center justify-center rounded-full border border-white/5 bg-white/5 group-hover:border-primary/50 transition-colors duration-300">
                     <span className="material-symbols-outlined text-primary font-light text-2xl">assignment_turned_in</span>
@@ -609,7 +609,7 @@ export default function Home() {
                 Alugar um veículo com a Flexloc é simples e rápido.
             </p>
         </div>
-        <div className="relative flex overflow-x-auto snap-x snap-mandatory no-scrollbar md:grid md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8 mt-4 pt-12 pb-4 -mx-6 px-6 lg:mx-0 lg:px-0">
+        <div className="relative flex overflow-x-auto snap-x snap-mandatory no-scrollbar md:grid md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8 mt-4 pt-12 pb-4 -mx-6 px-6 md:mx-auto md:overflow-visible md:px-0">
             <div className="hidden md:block absolute top-[60px] left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent z-0"></div>
             <div className="relative group z-10 flex flex-col items-center text-center animate-on-scroll snap-center shrink-0 w-[80vw] sm:w-[300px] md:w-auto">
                 <div className="absolute -top-10 left-1/2 -translate-x-1/2 text-[120px] font-bold text-white opacity-[0.03] select-none pointer-events-none leading-none">01</div>
@@ -693,7 +693,7 @@ export default function Home() {
           </p>
         </div>
 
-        <div className="relative z-10 max-w-[1400px] mx-auto flex overflow-x-auto snap-x snap-mandatory no-scrollbar md:grid md:grid-cols-3 gap-6 lg:gap-8 mb-16 -mx-6 px-6 lg:mx-0 lg:px-0">
+        <div className="relative z-10 max-w-[1400px] mx-auto flex overflow-x-auto snap-x snap-mandatory no-scrollbar md:grid md:grid-cols-3 gap-6 lg:gap-8 mb-16 md:overflow-visible">
           <div className="card-glass p-8 rounded-[2rem] border border-white/5 flex flex-col items-start gap-6 hover:border-primary/20 transition-all duration-500 group snap-center shrink-0 w-[85vw] sm:w-[380px] md:w-auto">
             <div className="w-12 h-12 flex items-center justify-center rounded-xl bg-white/5 text-primary group-hover:scale-110 transition-transform">
               <span className="material-symbols-outlined font-light fill-current">groups</span>
@@ -813,58 +813,66 @@ export default function Home() {
         </div>
       </section>
 
-      <footer className="bg-black border-t border-white/5 py-16 px-6 lg:px-20 overflow-hidden relative">
-        <div className="max-w-[1400px] mx-auto grid lg:grid-cols-4 gap-16 relative z-10">
-          <div className="lg:col-span-2 space-y-8">
-            <img src="/images/logo.png" decoding="async" alt="Flexloc Logo" className="h-10 w-auto object-contain opacity-90" />
-            <p className="text-slate-400 text-lg leading-relaxed font-sans max-w-md">
-                Simplificando o seu trajeto com veículos econômicos e revisados em Feira de Santana e Salvador.
-            </p>
-            <div className="flex gap-4">
-                <a href="https://instagram.com/flexloc" target="_blank" rel="noopener noreferrer" 
-                    className="w-12 h-12 flex items-center justify-center rounded-xl bg-white/5 border border-white/10 hover:border-primary/50 text-white hover:text-primary transition-all duration-300 group">
-                    <span className="group-hover:scale-110 transition-transform">IG</span>
-                </a>
-                <a href="https://wa.me/5575981333333" target="_blank" rel="noopener noreferrer"
-                    className="w-12 h-12 flex items-center justify-center rounded-xl bg-white/5 border border-white/10 hover:border-primary/50 text-white hover:text-primary transition-all duration-300 group">
-                    <span className="material-symbols-outlined text-xl group-hover:scale-110 transition-transform">chat</span>
-                </a>
+      <footer className="w-full bg-[#0A0A0A] border-t border-white/5 pt-16 pb-8 font-sans relative z-20">
+        <div className="max-w-[1400px] mx-auto px-6 md:px-12">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12 lg:gap-8 mb-16">
+                <div className="lg:col-span-2">
+                    <div className="flex items-center gap-2 mb-6">
+                        <img src="/images/logo.png" decoding="async" loading="lazy" alt="Flexloc Logo" className="h-6 w-auto object-contain" />
+                    </div>
+                    <p className="text-[#71717A] text-base leading-relaxed max-w-sm mb-8">
+                        A Flexloc oferece locação de veículos com economia, praticidade e aprovação rápida. Ideal para motoristas de aplicativos, entregadores ou pessoas que precisam de um carro confiável para o dia a dia.
+                    </p>
+                    <div className="flex flex-col gap-3">
+                        <a href="https://www.instagram.com/flexlocbrasil/" target="_blank" rel="noopener noreferrer"
+                            className="inline-flex items-center justify-center gap-3 px-6 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white text-sm font-bold hover:bg-white/10 hover:border-primary/50 transition-all duration-300 group w-fit">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" className="text-primary transition-transform duration-300 group-hover:scale-110">
+                                <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.791-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.209-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                            </svg>
+                            Seguir no Instagram
+                        </a>
+                        <a href="https://wa.me/5575981333333" target="_blank" rel="noopener noreferrer"
+                            className="inline-flex items-center justify-center gap-3 px-6 py-2.5 bg-primary text-background-dark rounded-xl text-xs font-black uppercase tracking-wider hover:bg-white hover:scale-[1.02] transition-all duration-300 shadow-[0_10px_20px_rgba(230,197,25,0.1) w-fit">
+                            <span className="material-symbols-outlined text-lg">chat</span>
+                            Atendimento
+                        </a>
+                    </div>
+                </div>
+                <div>
+                    <h4 className="text-white text-xs font-bold uppercase tracking-widest mb-6">Aluguel</h4>
+                    <ul className="space-y-4">
+                        <li><a className="text-[#71717A] hover:text-primary transition-colors text-sm" href="#">Frota Econômica (GNV)</a></li>
+                        <li><a className="text-[#71717A] hover:text-primary transition-colors text-sm" href="#">Sedãs Executivos</a></li>
+                        <li><a className="text-[#71717A] hover:text-primary transition-colors text-sm" href="#">SUVs &amp; Família</a></li>
+                        <li><a className="text-[#71717A] hover:text-primary transition-colors text-sm" href="#">Aluguel Semanal</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 className="text-white text-xs font-bold uppercase tracking-widest mb-6">Corporativo</h4>
+                    <ul className="space-y-4">
+                        <li><a className="text-[#71717A] hover:text-primary transition-colors text-sm" href="#">Terceirização de Frota</a></li>
+                        <li><a className="text-[#71717A] hover:text-primary transition-colors text-sm" href="#">Locação de Longo Prazo</a></li>
+                        <li><a className="text-[#71717A] hover:text-primary transition-colors text-sm" href="#">Gestão de Ativos</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 className="text-white text-xs font-bold uppercase tracking-widest mb-6">Empresa</h4>
+                    <ul className="space-y-4">
+                        <li><Link className="text-[#71717A] hover:text-primary transition-colors text-sm" to="/contact">Central de Contato</Link></li>
+                        <li><a className="text-[#71717A] hover:text-primary transition-colors text-sm" href="#">Sobre a FlexLoc</a></li>
+                        <li><a className="text-[#71717A] hover:text-primary transition-colors text-sm" href="#">Termos e Condições</a></li>
+                    </ul>
+                </div>
             </div>
-          </div>
-          
-          <div className="space-y-6">
-            <h4 className="text-white font-bold text-sm uppercase tracking-widest">Navegação</h4>
-            <ul className="space-y-4">
-              <li><a href="#fleet" className="text-slate-500 hover:text-primary transition-colors text-base font-sans">Nossa Frota</a></li>
-              <li><a href="#about" className="text-slate-500 hover:text-primary transition-colors text-base font-sans">Sobre Nós</a></li>
-              <li><Link to="/contact" className="text-slate-500 hover:text-primary transition-colors text-base font-sans">Página de Contato</Link></li>
-            </ul>
-          </div>
-          
-          <div className="space-y-6">
-            <h4 className="text-white font-bold text-sm uppercase tracking-widest">Contato</h4>
-            <ul className="space-y-4">
-              <li className="flex items-center gap-3 text-slate-500 font-sans">
-                <span className="material-symbols-outlined text-primary text-xl">location_on</span>
-                BA-001, Feira de Santana, Salvador
-              </li>
-              <li className="flex items-center gap-3 text-slate-500 font-sans">
-                <span className="material-symbols-outlined text-primary text-xl">call</span>
-                (75) 98133-3333
-              </li>
-              <li className="flex items-center gap-3 text-slate-500 font-sans">
-                <span className="material-symbols-outlined text-primary text-xl">mail</span>
-                contato@flexloc.com.br
-              </li>
-            </ul>
-          </div>
-        </div>
-        <div className="max-w-[1400px] mx-auto mt-16 pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-6 text-slate-600 text-sm font-sans relative z-10">
-          <p>© {new Date().getFullYear()} Flexloc Locadora de Veículos. Todos os direitos reservados.</p>
-          <div className="flex gap-8">
-            <a href="#" className="hover:text-white transition-colors">Termos de Uso</a>
-            <a href="#" className="hover:text-white transition-colors">Privacidade</a>
-          </div>
+            <div className="pt-8 border-t border-white/5 flex flex-col md:row justify-between items-center gap-6">
+                <p className="text-[#71717A] text-xs font-light">
+                    © {new Date().getFullYear()} FlexLoc Locadora de Veículos. Todos os direitos reservados.
+                </p>
+                <div className="flex gap-8">
+                    <a className="text-[#71717A] hover:text-white transition-colors text-[10px] uppercase tracking-widest font-bold" href="#">Privacidade</a>
+                    <a className="text-[#71717A] hover:text-white transition-colors text-[10px] uppercase tracking-widest font-bold" href="#">Cookies</a>
+                </div>
+            </div>
         </div>
       </footer>
     </>
