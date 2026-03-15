@@ -2,7 +2,6 @@ import { useEffect, useState, useMemo } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { CARS } from '../constants';
 import { useRentalCalendar } from '../hooks/useRentalCalendar';
-import { toLocalMidnight } from '../utils/dateUtils';
 
 const ALL_CARS = CARS;
 
@@ -37,18 +36,6 @@ export default function Book() {
   const [isLocationOpen, setIsLocationOpen] = useState(false);
   const [isTimeStartOpen, setIsTimeStartOpen] = useState(false);
   const [isTimeEndOpen, setIsTimeEndOpen] = useState(false);
-
-  // Click Outside Logic
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      const target = e.target as HTMLElement;
-      if (!target.closest('#location-wrapper')) setIsLocationOpen(false);
-      if (!target.closest('#time-start-wrapper')) setIsTimeStartOpen(false);
-      if (!target.closest('#time-end-wrapper')) setIsTimeEndOpen(false);
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
 
   const {
     dateStartRef,
@@ -200,8 +187,8 @@ export default function Book() {
     const planName = plan === 'motorista' ? 'Motorista de App' : 'Pessoa Física';
     const franchiseName = mileageFranchise === 'k3' ? '3.000km/mês' : mileageFranchise === 'k6' ? '6.000km/mês' : 'KM Livre/mês';
     
-    const formattedStart = dateStart ? toLocalMidnight(dateStart)?.toLocaleDateString('pt-BR') : '';
-    const formattedEnd = dateEnd ? toLocalMidnight(dateEnd)?.toLocaleDateString('pt-BR') : '';
+    const formattedStart = dateStart ? new Date(dateStart + 'T12:00:00').toLocaleDateString('pt-BR') : '';
+    const formattedEnd = dateEnd ? new Date(dateEnd + 'T12:00:00').toLocaleDateString('pt-BR') : '';
 
     const message = `Olá! Gostaria de confirmar uma reserva:
 
@@ -439,7 +426,7 @@ Aguardo retorno para finalizar!`;
 
               <div className="space-y-4">
                 <label htmlFor="location-btn" className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] ml-1">Local de Retirada</label>
-                <div className="relative" id="location-wrapper">
+                <div className="relative">
                   <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none z-10 text-primary/70">
                     <span className="material-symbols-outlined text-[18px]">location_on</span>
                   </div>
@@ -502,7 +489,7 @@ Aguardo retorno para finalizar!`;
                 </div>
                 <div className="space-y-2 relative">
                   <label htmlFor="time-start-btn" className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] ml-1">Hora</label>
-                  <div className="relative group" id="time-start-wrapper">
+                  <div className="relative group">
                     <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none text-gray-500 transition-colors group-hover:text-primary">
                       <span className="material-symbols-outlined text-[16px]">schedule</span>
                     </div>
@@ -544,7 +531,7 @@ Aguardo retorno para finalizar!`;
                 </div>
                 <div className="space-y-2 relative">
                   <label htmlFor="time-end-btn" className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] ml-1">Hora</label>
-                  <div className="relative group" id="time-end-wrapper">
+                  <div className="relative group">
                     <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none text-gray-500 transition-colors group-hover:text-primary">
                       <span className="material-symbols-outlined text-[16px]">schedule</span>
                     </div>
@@ -665,8 +652,7 @@ Aguardo retorno para finalizar!`;
                   <p className="text-yellow-500 text-xs font-bold text-center mt-2 p-3 bg-yellow-500/10 rounded-xl border border-yellow-500/20">{warning}</p>
                 )}
 
-                 <button onClick={handleConfirm} disabled={!!error || !dateStart || !dateEnd}
-                   className={`btn-confirm w-full py-3 rounded-xl flex items-center justify-center gap-2 active:scale-95 text-xs transition-all ${!!error || !dateStart || !dateEnd ? 'opacity-50 grayscale cursor-not-allowed' : ''}`}>
+                <button onClick={handleConfirm} className="btn-confirm w-full py-3 rounded-xl flex items-center justify-center gap-2 active:scale-95 text-xs">
                   <span>Confirmar Reserva</span>
                   <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
                 </button>
@@ -675,21 +661,6 @@ Aguardo retorno para finalizar!`;
           </aside>
         </div>
       </main>
-
-      {/* MOBILE STICKY CTA */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-[60] p-4 bg-black/80 backdrop-blur-xl border-t border-white/5 safe-area-bottom">
-        <div className="flex items-center justify-between gap-4 max-w-lg mx-auto">
-          <div className="flex flex-col">
-            <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Total Estimado</span>
-            <span className="text-xl font-black text-white tracking-tighter">R$ {totals.total.toLocaleString('pt-BR')}</span>
-          </div>
-          <button onClick={handleConfirm} disabled={!!error || !dateStart || !dateEnd}
-            className={`flex-1 py-3.5 px-6 bg-primary text-black rounded-2xl text-xs font-black uppercase tracking-widest flex items-center justify-center gap-2 shadow-2xl shadow-primary/20 active:scale-95 transition-all ${!!error || !dateStart || !dateEnd ? 'opacity-50 grayscale cursor-not-allowed' : ''}`}>
-            Confirmar
-            <span className="material-symbols-outlined text-sm">arrow_forward_ios</span>
-          </button>
-        </div>
-      </div>
     </div>
   );
 }
