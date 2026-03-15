@@ -543,15 +543,14 @@ span.flatpickr-weekday {
 }
 
 .dayContainer {
-  width: 308px !important;
-  min-width: 308px !important;
-  max-width: 308px !important;
-  margin: 0 auto !important;
-  justify-content: flex-start !important;
-  padding: 4px 0 !important;
+  width: 100% !important;
+  min-width: 100% !important;
+  max-width: 100% !important;
   display: flex !important;
   flex-wrap: wrap !important;
-  box-sizing: border-box !important;
+  justify-content: space-between !important; /* Distribui o espaço extra automaticamente entre os dias */
+  padding-top: 8px !important;
+  gap: 4px 0 !important; 
 }
 
 /* ====================================================
@@ -566,14 +565,16 @@ span.flatpickr-weekday {
   font-size: 14px !important;
   height: 40px !important;
   line-height: 40px !important;
-  width: 14.28% !important; /* FORÇA 7 COLUNAS */
-  max-width: 14.28% !important;
-  flex: 0 0 14.28% !important;
-  margin: 2px 0 !important;
+  
+  /* CORREÇÃO AQUI */
+  width: 40px !important;
+  max-width: 40px !important;
+  flex-basis: 40px !important;
+  margin: 2px 0 !important; /* Margin 0 nas laterais, pois o justify-content já faz o alinhamento */
+  
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  box-sizing: border-box !important;
 }
 
 .flatpickr-day:hover, .flatpickr-day:focus {
