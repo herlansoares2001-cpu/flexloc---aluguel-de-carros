@@ -263,412 +263,204 @@ Aguardo retorno para finalizar!`;
         </div>
       </header>
 
-      <main className="flex-grow pt-20 min-h-screen bg-booking-radial">
-        <div className="max-w-[1600px] mx-auto px-4 py-6 flex flex-col lg:flex-row gap-5 items-start">
-          
-          {/* LEFT: FILTER SIDEBAR */}
-          <aside className="w-full lg:w-[240px] shrink-0 lg:sticky lg:top-24 flex flex-col gap-4">
-            <div className="glass-panel rounded-2xl p-5 flex flex-col gap-5">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <span className="material-symbols-outlined text-primary text-base">filter_list</span>
-                  <span className="text-sm font-semibold uppercase tracking-[0.2em] text-gray-400">Filtros</span>
-                </div>
-                <button onClick={resetFilters} className="text-sm text-primary/70 hover:text-primary transition-colors uppercase tracking-wide">Limpar</button>
-              </div>
+      <main className="flex-grow min-h-screen bg-booking-radial pb-32">
+        <div className="max-w-6xl mx-auto px-4 pt-24 pb-32 lg:pb-12 min-h-screen">
+          {/* Título da Página */}
+          <h1 className="text-3xl font-bold mb-8 text-white">Finalize sua Reserva</h1>
 
-              <div>
-                <div className="relative">
-                  <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-[16px]">search</span>
-                  <input type="text" placeholder="Buscar modelo..." value={search} onChange={e => setSearch(e.target.value)}
-                    className="w-full pl-9 pr-3 py-2 bg-white/[0.04] border border-white/5 rounded-lg text-xs text-white placeholder-gray-600 focus:outline-none focus:border-primary/40 transition-colors" />
+          {/* Início do Grid: 1 coluna no mobile, 2 colunas no Desktop */}
+          <div className="flex flex-col lg:grid lg:grid-cols-12 gap-8 items-start">
+            
+            {/* COLUNA ESQUERDA: Resumo do Carro (Fixo no scroll) */}
+            <div className="lg:col-span-5 w-full lg:sticky lg:top-24 space-y-6">
+              <div className="glass-panel rounded-3xl p-6 border border-white/10 bg-white/[0.03]">
+                <div className="relative h-48 w-full mb-6 flex items-center justify-center">
+                  <img src={currentCar.img || currentCar.image} decoding="async" alt={currentCar.name} className="car-img object-contain w-full h-full" />
                 </div>
-              </div>
+                <div className="mb-6">
+                  <span className={`text-[10px] font-black tracking-[0.2em] uppercase ${currentCar.catColor} mb-1 block`}>{currentCar.catLabel}</span>
+                  <h2 className="text-white text-3xl font-bold tracking-tight">{currentCar.name}</h2>
+                  <p className="text-primary font-black text-xl mt-2">
+                    {plan === 'pf' ? `R$ ${currentCar.priceDay}` : `R$ ${currentCar.pricingApp?.[location as 'fsa' | 'ssa']?.[mileageFranchise] ?? '-'}`}
+                    <span className="text-gray-500 text-sm font-normal">/{plan === 'pf' ? 'dia' : 'sem'}</span>
+                  </p>
+                </div>
 
-              <div>
-                <p className="text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-3">Categoria</p>
-                <div className="flex flex-col gap-1">
-                  {['econômico', 'sedan', 'suv', 'família', 'premium'].map(cat => (
-                    <label key={cat} className="filter-check">
-                      <input type="checkbox" checked={categories.includes(cat)} onChange={() => toggleCategory(cat)} />
-                      <span className="capitalize">{cat}</span>
-                    </label>
+                <div className="grid grid-cols-3 gap-3 mb-8 border-t border-white/5 pt-6">
+                  {currentCar.feats.slice(0, 3).map(f => (
+                    <div key={f} className="flex flex-col items-center gap-2 text-center">
+                      <span className="material-symbols-outlined text-gray-400 text-lg font-light">{FEAT_ICONS[f] || 'check_circle'}</span>
+                      <span className="text-[9px] text-gray-500 uppercase tracking-widest font-bold">{FEAT_LABELS[f] || f}</span>
+                    </div>
                   ))}
                 </div>
-              </div>
 
-              <div>
-                <p className="text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-2">Preço Máximo / Dia</p>
-                <p className="text-primary font-bold text-base mb-3">R$ <span>{maxPrice}</span></p>
-                <input type="range" className="range-slider" min="50" max="1300" step="10" value={maxPrice} onChange={e => setMaxPrice(Number(e.target.value))}
-                   aria-label="Preço máximo por dia"
-                  style={{ '--pct': `${((maxPrice - 50) / (1300 - 50)) * 100}%` } as any} />
-                <div className="flex justify-between text-sm text-gray-600 mt-1">
-                  <span>R$50</span><span>R$1300</span>
-                </div>
-              </div>
-
-              <div>
-                <p className="text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-3">Características</p>
-                <div className="flex flex-col gap-1">
-                  {Object.entries(FEAT_LABELS).map(([key, label]) => (
-                    <label key={key} className="filter-check">
-                      <input type="checkbox" checked={features.includes(key)} onChange={() => toggleFeature(key)} />
-                      <span>{label}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-
-              <p className="text-xs text-gray-600 border-t border-white/5 pt-4"><span>{filteredCars.length}</span> veículos encontrados</p>
-            </div>
-          </aside>
-
-          {/* CENTER: CAR GRID */}
-          <div className="flex-1 min-w-0 relative">
-            <div className="bg-text-decoration">FLEXLOC</div>
-
-            <div className="mb-10 relative z-10">
-              <div className="flex items-center gap-3 mb-6 text-[11px] font-bold tracking-[0.25em] uppercase text-gray-500">
-                <span>01</span>
-                <span className="w-8 h-[1px] bg-gray-700"></span>
-                <span className="text-primary">Seleção de Frota</span>
-              </div>
-              <h1 className="text-white text-3xl md:text-4xl lg:text-5xl font-light mb-4 tracking-tighter leading-none">
-                Selecione seu <br /><span className="font-semibold text-transparent text-gradient-animate">Veículo Ideal.</span>
-              </h1>
-              <p className="text-gray-500 text-base font-light max-w-lg leading-relaxed tracking-wide font-sans">
-                Escolha entre carros econômicos, confortáveis, utilitários e SUVs. Todos revisados e preparados para oferecer economia, segurança e praticidade no seu dia a dia.
-              </p>
-            </div>
-
-            <div className="flex items-center justify-end mb-6 relative z-10">
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-600 uppercase tracking-[0.15em]">Ordenar:</span>
-                <select value={sort} onChange={e => setSort(e.target.value)}
-                  aria-label="Ordenar veículos"
-                  className="bg-white/5 border border-white/10 text-xs text-white rounded-lg px-3 py-1.5 focus:outline-none focus:border-primary/40">
-                  <option value="price-asc">Menor Preço</option>
-                  <option value="price-desc">Maior Preço</option>
-                  <option value="name">Nome A-Z</option>
-                </select>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 mt-2">
-              {filteredCars.map(c => {
-                let displayPrice: number | string = '-';
-                let priceLabel = 'Por semana';
-                let unavailable = false;
-
-                if (plan === 'pf') {
-                  displayPrice = c.priceDay;
-                  priceLabel = 'Por dia';
-                  unavailable = !c.availablePF;
-                } else {
-                  const pricing = c.pricingApp?.[location as 'fsa' | 'ssa'];
-                  const price = pricing?.[mileageFranchise];
-                  displayPrice = price ?? '-';
-                  
-                  // Only mark as totally unavailable if it has NO pricing for this city at all
-                  const hasAnyPricing = pricing && (pricing.k3 !== null || pricing.k6 !== null || pricing.free !== null);
-                  unavailable = !hasAnyPricing;
-                  
-                  // If it has pricing but not for THIS franchise, we'll handle it in the display
-                  const isFranchiseUnavailable = pricing && pricing[mileageFranchise] === null;
-                  if (isFranchiseUnavailable && !unavailable) {
-                    displayPrice = 'Troque a franquia';
-                  } else if (pricing && !isFranchiseUnavailable) {
-                    displayPrice = pricing[mileageFranchise]!;
-                  }
-                }
-
-                const isSelected = selectedCarId === c.id;
-
-                return (
-                  <div key={c.id} onClick={() => !unavailable && setSelectedCarId(c.id)}
-                    className={`group car-card rounded-3xl p-6 flex flex-col relative transition-all duration-300 ${unavailable ? 'opacity-40 pointer-events-none' : 'cursor-pointer hover:shadow-2xl hover:shadow-primary/10'} ${isSelected ? 'bg-white/[0.06] border border-primary/30' : 'bg-white/[0.03] border border-white/5'}`}>
-                    <div className="absolute -right-10 -top-10 w-40 h-40 bg-primary/5 rounded-full blur-3xl pointer-events-none transition-opacity group-hover:opacity-100 opacity-0"></div>
-                    <div className="relative h-48 w-full -mt-4 mb-4 flex items-center justify-center z-10">
-                      <img src={c.img || c.image} decoding="async" loading="lazy" alt={c.name} className="car-img object-contain w-full h-full transition-transform duration-500 group-hover:scale-105" />
-                    </div>
-                    <div className="flex justify-between items-start mb-6 relative z-10">
-                      <div>
-                        <span className={`text-[10px] font-black tracking-[0.2em] uppercase ${c.catColor} mb-1 block`}>{c.catLabel}</span>
-                        <h3 className="text-white text-2xl font-bold tracking-tight">{c.name}</h3>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-gray-500 text-[10px] uppercase tracking-widest mb-0.5">{priceLabel}</p>
-                        <p className={`text-primary font-black ${typeof displayPrice === 'string' && displayPrice.length > 10 ? 'text-sm' : 'text-xl'}`}>
-                          {typeof displayPrice === 'number' ? `R$ ${displayPrice}` : displayPrice}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-3 gap-3 mb-6 border-t border-white/5 pt-5 relative z-10">
-                      {c.feats.slice(0, 3).map(f => (
-                        <div key={f} className="flex flex-col items-center gap-2 text-center">
-                          <span className="material-symbols-outlined text-gray-400 text-lg font-light">{FEAT_ICONS[f] || 'check_circle'}</span>
-                          <span className="text-[9px] text-gray-500 uppercase tracking-widest font-bold">{FEAT_LABELS[f] || f}</span>
-                        </div>
-                      ))}
-                    </div>
-                    <button className={`w-full py-3 rounded-xl text-xs font-bold uppercase tracking-widest transition-all ${isSelected ? 'bg-primary text-black' : 'bg-white/5 text-white hover:bg-white/10'}`}>
-                      {isSelected ? 'Selecionado' : 'Reservar Agora'}
-                    </button>
-                  </div>
-                );
-              })}
-            </div>
-
-            {filteredCars.length === 0 && (
-              <div className="no-results show">
-                <span className="material-symbols-outlined text-5xl text-gray-700 block mb-4">directions_car</span>
-                <p className="text-gray-500">Nenhum veículo encontrado com esses filtros.</p>
-                <button onClick={resetFilters} className="mt-4 text-primary text-sm underline">Limpar filtros</button>
-              </div>
-            )}
-          </div>
-
-          {/* RIGHT: BOOKING PANEL */}
-          <aside className="w-full lg:w-[340px] shrink-0 lg:sticky lg:top-20">
-            <div className="glass-panel rounded-[24px] p-4 flex flex-col gap-3 overflow-visible relative">
-              <div className="absolute -top-10 -right-10 w-40 h-40 bg-primary/10 blur-[60px] pointer-events-none rounded-full"></div>
-
-              <div className="relative group">
-                <div className="absolute inset-0 bg-gradient-to-br from-white/[0.05] to-transparent rounded-xl -m-0.5 pointer-events-none"></div>
-                <div className="relative flex items-center gap-3 p-3 bg-white/[0.04] rounded-xl border border-white/10 overflow-hidden">
-                  <div className="relative w-20 h-16 flex-shrink-0 flex items-center justify-center">
-                    <img src={currentCar.img || currentCar.image} decoding="async" loading="lazy" alt="car" className="h-full w-auto object-contain car-img" />
-                    <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-16 h-1 bg-black/40 blur-sm rounded-full"></div>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-primary/80 block mb-0.5">Veículo</span>
-                    <h3 className="text-lg font-black text-white tracking-tight truncate">{currentCar.name}</h3>
-                    <div className="flex items-baseline gap-1 mt-0.5">
-                      <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-gray-500">Taxa:</span>
-                      <p className="text-sm font-black text-white">
-                        {(() => {
-                          if (plan === 'pf') return `R$ ${currentCar.priceDay}`;
-                          const pricing = currentCar.pricingApp?.[location as 'fsa' | 'ssa'];
-                          const price = pricing?.[mileageFranchise];
-                          return price ? `R$ ${price}` : 'Indisponível';
-                        })()}
-                        <span className="text-[10px] font-normal text-gray-500">/{plan === 'pf' ? 'dia' : 'sem'}</span>
-                      </p>
-                    </div>
+                <div className="space-y-3">
+                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] ml-1">Plano de Locação</label>
+                  <div className="pill-toggle flex bg-black/40 p-1.5 rounded-2xl border border-white/5">
+                    <button onClick={() => setPlan('motorista')} className={`flex-1 py-3 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all ${plan === 'motorista' ? 'bg-primary text-background-dark shadow-sm shadow-primary/20' : 'text-gray-500 hover:text-gray-300'}`}>Motorista de App</button>
+                    <button onClick={() => setPlan('pf')} className={`flex-1 py-3 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all ${plan === 'pf' ? 'bg-primary text-background-dark shadow-sm shadow-primary/20' : 'text-gray-500 hover:text-gray-300'}`}>Pessoa Física</button>
                   </div>
                 </div>
               </div>
+            </div>
 
-              <div className="flex items-center gap-2">
-                <span className="h-px flex-1 bg-white/5"></span>
-                <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-white/90">Configurar <span className="text-primary">Reserva</span></h2>
-                <span className="h-px flex-1 bg-white/5"></span>
-              </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-1 opacity-60">Local de Retirada</label>
-                  <div className="flex p-1 bg-black/40 rounded-2xl border border-white/5 backdrop-blur-md shadow-inner">
-                    <button type="button" onClick={() => setLocation('fsa')}
-                      className={`flex-1 py-3 px-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-300 ${location === 'fsa' ? 'bg-primary text-background-dark shadow-lg shadow-primary/20' : 'text-gray-500 hover:text-white'}`}>
-                      FSA
-                    </button>
-                    <button type="button" onClick={() => setLocation('ssa')}
-                      className={`flex-1 py-3 px-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-300 ${location === 'ssa' ? 'bg-primary text-background-dark shadow-lg shadow-primary/20' : 'text-gray-500 hover:text-white'}`}>
-                      SSA
-                    </button>
-                  </div>
-                </div>
-
+            {/* COLUNA DIREITA: Formulário de Reserva */}
+            <div className="lg:col-span-7 w-full bg-[#121214]/95 border border-white/10 rounded-2xl p-6 lg:p-8 space-y-8 relative overflow-visible">
+              
+              {/* Localização */}
               <div className="space-y-3">
-                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] ml-1">Plano de Locação</label>
-                <div className="pill-toggle flex bg-black/40 p-1.5 rounded-2xl border border-white/5">
-                  <button onClick={() => setPlan('motorista')} className={`flex-1 py-2.5 text-xs font-semibold rounded-xl transition-all ${plan === 'motorista' ? 'bg-white/10 text-white shadow-sm' : 'text-gray-500 hover:text-gray-300'}`}>Motorista de App</button>
-                  <button onClick={() => setPlan('pf')} className={`flex-1 py-2.5 text-xs font-semibold rounded-xl transition-all ${plan === 'pf' ? 'bg-white/10 text-white shadow-sm' : 'text-gray-500 hover:text-gray-300'}`}>Pessoa Física</button>
+                <label className="text-sm font-bold text-slate-400 uppercase tracking-widest ml-1">Local de Retirada</label>
+                <div className="flex p-1 bg-black/40 rounded-2xl border border-white/5 shadow-inner">
+                  <button type="button" onClick={() => setLocation('fsa')}
+                    className={`flex-1 py-4 px-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-300 ${location === 'fsa' ? 'bg-primary text-background-dark shadow-lg shadow-primary/20' : 'text-gray-500 hover:text-white'}`}>
+                    Feira de Santana
+                  </button>
+                  <button type="button" onClick={() => setLocation('ssa')}
+                    className={`flex-1 py-4 px-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-300 ${location === 'ssa' ? 'bg-primary text-background-dark shadow-lg shadow-primary/20' : 'text-gray-500 hover:text-white'}`}>
+                    Salvador
+                  </button>
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <label htmlFor="date-start" className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] ml-1 flex justify-between">
-                    Início
-                    {plan === 'motorista' ? (
-                      <span className="text-[9px] font-black text-primary animate-pulse">Min. 7d</span>
-                    ) : (
-                      <span className="text-[9px] font-black text-primary animate-pulse">Min. 3d</span>
-                    )}
-                  </label>
-                  <div className={`relative group ${isCalendarStartOpen ? 'z-[60]' : 'z-10'}`} ref={calendarStartRef}>
-                    <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none text-gray-500 transition-colors group-hover:text-primary z-10">
-                      <span className="material-symbols-outlined text-[16px]">calendar_today</span>
-                    </div>
-                    <button
-                      id="date-start-btn"
-                      type="button"
-                      onClick={() => {
-                        setIsCalendarStartOpen(!isCalendarStartOpen);
-                        setIsCalendarEndOpen(false);
-                      }}
-                      className={`w-full text-left pl-9 pr-2 py-3 bg-white/[0.03] border rounded-xl text-xs text-white cursor-pointer font-bold focus:border-primary/50 transition-all relative z-0 ${isCalendarStartOpen ? 'border-primary/50 ring-1 ring-primary/50' : 'border-white/10'}`}
-                    >
-                      {selectedDateStart ? selectedDateStart.toLocaleDateString('pt-BR') : "dd/mm/aa"}
-                    </button>
-
-                    {isCalendarStartOpen && (
-                      <div className="absolute z-[100] left-0 right-0 sm:right-auto mt-2 sm:w-80">
-                        <Calendar 
-                          currentMonth={viewDateStart.getMonth()}
-                          currentYear={viewDateStart.getFullYear()}
-                          startDate={selectedDateStart}
-                          endDate={selectedDateEnd}
-                          onSelectDate={(date) => {
-                            handleSelectStart(date);
-                            setIsCalendarStartOpen(false);
-                          }}
-                          onNavigate={(year, month) => setViewDateStart(new Date(year, month, 1))}
-                          isDateDisabled={isStartDateDisabled}
-                          label="Data de Retirada"
-                        />
-                      </div>
-                    )}
-                  </div>
-                  {error && error.includes('retirada') && <p className="text-[9px] text-red-500 font-bold ml-1 mt-1">{error}</p>}
-                </div>
-                <div className="space-y-2 relative">
-                  <label htmlFor="time-start-btn" className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] ml-1">Hora</label>
-                  <div className="relative group">
-                    <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none text-gray-500 transition-colors group-hover:text-primary">
-                      <span className="material-symbols-outlined text-[16px]">schedule</span>
-                    </div>
-                    <button id="time-start-btn" aria-label="Hora de Início" onClick={() => setIsTimeStartOpen(!isTimeStartOpen)}
-                      className="w-full text-left pl-9 pr-8 py-3 bg-white/[0.03] border border-white/10 rounded-xl text-xs text-white font-bold transition-all focus:border-primary/50">
-                      <span>{timeStart}</span>
-                    </button>
-                    <div className="absolute inset-y-0 right-2 flex items-center pointer-events-none text-gray-500">
-                      <span className="material-symbols-outlined text-[18px]">expand_more</span>
-                    </div>
-                    {isTimeStartOpen && (
-                      <div className="absolute z-50 w-full mt-2 bg-[#0A0A0A] border border-white/10 rounded-2xl shadow-2xl max-h-48 overflow-y-auto custom-scrollbar">
-                        <ul className="p-2 text-sm font-medium text-gray-400 flex flex-col gap-1">
-                          {timeOptions.map(t => (
-                            <li key={t}>
-                              <button type="button" onClick={() => { setTimeStart(t); setIsTimeStartOpen(false); }}
-                                className="w-full text-center px-2 py-2 hover:text-primary hover:bg-white/5 rounded-lg transition-all duration-150 cursor-pointer">
-                                {t}
-                              </button>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <label htmlFor="date-end" className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] ml-1 flex justify-between">
-                    Fim
-                    {plan === 'motorista' && <span className="text-[9px] font-black text-primary">Ciclo Semanal</span>}
-                  </label>
-                  <div className={`relative group ${isCalendarEndOpen ? 'z-[60]' : 'z-10'}`} ref={calendarEndRef}>
-                    <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none text-gray-500 transition-colors group-hover:text-primary z-10">
-                      <span className="material-symbols-outlined text-[16px]">event_repeat</span>
-                    </div>
-                    <button
-                      id="date-end-btn"
-                      type="button"
-                      onClick={() => {
-                        setIsCalendarEndOpen(!isCalendarEndOpen);
-                        setIsCalendarStartOpen(false);
-                      }}
-                      className={`w-full text-left pl-9 pr-2 py-3 bg-white/[0.03] border rounded-xl text-xs text-white cursor-pointer font-bold focus:border-primary/50 transition-all relative z-0 ${isCalendarEndOpen ? 'border-primary/50 ring-1 ring-primary/50' : 'border-white/10'}`}
-                    >
-                      {selectedDateEnd ? selectedDateEnd.toLocaleDateString('pt-BR') : "dd/mm/aa"}
-                    </button>
-
-                    {isCalendarEndOpen && (
-                      <div className="absolute z-[100] left-0 right-0 sm:right-auto mt-2 sm:w-80">
-                        <Calendar 
-                          currentMonth={viewDateEnd.getMonth()}
-                          currentYear={viewDateEnd.getFullYear()}
-                          startDate={selectedDateStart}
-                          endDate={selectedDateEnd}
-                          onSelectDate={(date) => {
-                            handleSelectEnd(date);
-                            setIsCalendarEndOpen(false);
-                          }}
-                          onNavigate={(year, month) => setViewDateEnd(new Date(year, month, 1))}
-                          isDateDisabled={isEndDateDisabled}
-                          label="Data de Devolução"
-                        />
-                      </div>
-                    )}
-                  </div>
-                  {((error && !error.includes('retirada')) || warning) && (
-                    <p className={`text-[9px] font-bold ml-1 mt-1 ${error ? 'text-red-500' : 'text-yellow-500'}`}>
-                      {error || warning}
-                    </p>
-                  )}
-                </div>
-                <div className="space-y-2 relative">
-                  <label htmlFor="time-end-btn" className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] ml-1">Hora</label>
-                  <div className="relative group">
-                    <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none text-gray-500 transition-colors group-hover:text-primary">
-                      <span className="material-symbols-outlined text-[16px]">schedule</span>
-                    </div>
-                    <button id="time-end-btn" aria-label="Hora de Fim" onClick={() => setIsTimeEndOpen(!isTimeEndOpen)}
-                      className="w-full text-left pl-9 pr-8 py-3 bg-white/[0.03] border border-white/10 rounded-xl text-xs text-white font-bold transition-all focus:border-primary/50">
-                      <span>{timeEnd}</span>
-                    </button>
-                    <div className="absolute inset-y-0 right-2 flex items-center pointer-events-none text-gray-500">
-                      <span className="material-symbols-outlined text-[18px]">expand_more</span>
-                    </div>
-                    {isTimeEndOpen && (
-                      <div className="absolute z-50 w-full mt-2 bg-[#0A0A0A] border border-white/10 rounded-2xl shadow-2xl max-h-48 overflow-y-auto custom-scrollbar">
-                        <ul className="p-2 text-sm font-medium text-gray-400 flex flex-col gap-1">
-                          {timeOptions.map(t => (
-                            <li key={t}>
-                              <button type="button" onClick={() => { setTimeEnd(t); setIsTimeEndOpen(false); }}
-                                className="w-full text-center px-2 py-2 hover:text-primary hover:bg-white/5 rounded-lg transition-all duration-150 cursor-pointer">
-                                {t}
-                              </button>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              {plan === 'pf' ? (
+              {/* AGRUPAMENTO HORIZONTAL DAS DATAS */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
+                {/* Retirada */}
                 <div className="space-y-4">
-                  <div className="p-4 bg-primary/10 border border-primary/20 rounded-2xl">
-                    <div className="flex items-center gap-3 mb-2">
-                      <span className="material-symbols-outlined text-primary">shield</span>
-                      <span className="text-xs font-black text-white uppercase tracking-wider">Proteção Inclusa</span>
-                    </div>
-                    <p className="text-[10px] text-gray-400 leading-relaxed">
-                      Para sua tranquilidade, a proteção total (roubo, colisão e terceiros) já está inclusa no valor da diária.
-                    </p>
-                  </div>
+                  <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest">Retirada</h3>
                   
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="p-3 bg-white/[0.03] border border-white/10 rounded-xl">
-                      <p className="text-[8px] font-bold text-gray-500 uppercase mb-1">Limite de KM</p>
-                      <p className="text-xs font-black text-white">600km/período</p>
+                  <div className="space-y-4">
+                    <div className={`relative group ${isCalendarStartOpen ? 'z-[60]' : 'z-10'}`} ref={calendarStartRef}>
+                      <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none text-gray-500 transition-colors group-hover:text-primary z-10">
+                        <span className="material-symbols-outlined text-[20px]">calendar_today</span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => { setIsCalendarStartOpen(!isCalendarStartOpen); setIsCalendarEndOpen(false); }}
+                        className={`w-full text-left pl-10 pr-2 py-4 bg-white/[0.03] border rounded-xl text-sm text-white font-bold focus:border-primary/50 transition-all ${isCalendarStartOpen ? 'border-primary/50 ring-1 ring-primary/50' : 'border-white/10'}`}
+                      >
+                        {selectedDateStart ? selectedDateStart.toLocaleDateString('pt-BR') : "Data"}
+                      </button>
+
+                      {isCalendarStartOpen && (
+                        <div className="absolute z-[100] left-0 right-0 sm:right-auto mt-2 sm:w-80">
+                          <Calendar 
+                            currentMonth={viewDateStart.getMonth()}
+                            currentYear={viewDateStart.getFullYear()}
+                            startDate={selectedDateStart}
+                            endDate={selectedDateEnd}
+                            onSelectDate={(date) => {
+                              handleSelectStart(date);
+                              setIsCalendarStartOpen(false);
+                            }}
+                            onNavigate={(year, month) => setViewDateStart(new Date(year, month, 1))}
+                            isDateDisabled={isStartDateDisabled}
+                            label="Data de Retirada"
+                          />
+                        </div>
+                      )}
                     </div>
-                    <div className="p-3 bg-white/[0.03] border border-white/10 rounded-xl">
-                      <p className="text-[8px] font-bold text-gray-500 uppercase mb-1">KM Excedente</p>
-                      <p className="text-xs font-black text-white">R$ 0,50/km</p>
+
+                    <div className="relative group">
+                      <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none text-gray-500">
+                        <span className="material-symbols-outlined text-[20px]">schedule</span>
+                      </div>
+                      <button type="button" onClick={() => setIsTimeStartOpen(!isTimeStartOpen)}
+                        className="w-full text-left pl-10 pr-8 py-4 bg-white/[0.03] border border-white/10 rounded-xl text-sm text-white font-bold transition-all focus:border-primary/50">
+                        <span>{timeStart}</span>
+                      </button>
+                      {isTimeStartOpen && (
+                        <div className="absolute z-50 w-full mt-2 bg-black border border-white/10 rounded-2xl shadow-2xl max-h-48 overflow-y-auto custom-scrollbar">
+                          <ul className="p-2 text-sm font-medium text-gray-400 flex flex-col gap-1">
+                            {timeOptions.map(t => (
+                              <li key={t}>
+                                <button type="button" onClick={() => { setTimeStart(t); setIsTimeStartOpen(false); }}
+                                  className="w-full text-center px-2 py-3 hover:text-primary hover:bg-white/5 rounded-lg transition-all duration-150 cursor-pointer">
+                                  {t}
+                                </button>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
                     </div>
+                    {error && error.includes('retirada') && <p className="text-[10px] text-red-500 font-bold ml-1">{error}</p>}
                   </div>
                 </div>
-              ) : (
-                <div className="space-y-2">
-                  <label className="text-[9px] font-bold text-gray-500 uppercase tracking-[0.2em] ml-1 flex items-center gap-2">
-                    Franquia de Kilometragem
-                    <span className="material-symbols-outlined text-[12px] text-primary/60">speed</span>
-                  </label>
-                  <div className="space-y-2">
+
+                {/* Devolução */}
+                <div className="space-y-4">
+                  <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest">Devolução</h3>
+                  
+                  <div className="space-y-4">
+                    <div className={`relative group ${isCalendarEndOpen ? 'z-[60]' : 'z-10'}`} ref={calendarEndRef}>
+                      <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none text-gray-500 transition-colors group-hover:text-primary z-10">
+                        <span className="material-symbols-outlined text-[20px]">event_repeat</span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => { setIsCalendarEndOpen(!isCalendarEndOpen); setIsCalendarStartOpen(false); }}
+                        className={`w-full text-left pl-10 pr-2 py-4 bg-white/[0.03] border rounded-xl text-sm text-white font-bold focus:border-primary/50 transition-all ${isCalendarEndOpen ? 'border-primary/50 ring-1 ring-primary/50' : 'border-white/10'}`}
+                      >
+                        {selectedDateEnd ? selectedDateEnd.toLocaleDateString('pt-BR') : "Data"}
+                      </button>
+
+                      {isCalendarEndOpen && (
+                        <div className="absolute z-[100] left-0 right-0 sm:right-auto mt-2 sm:w-80">
+                          <Calendar 
+                            currentMonth={viewDateEnd.getMonth()}
+                            currentYear={viewDateEnd.getFullYear()}
+                            startDate={selectedDateStart}
+                            endDate={selectedDateEnd}
+                            onSelectDate={(date) => {
+                              handleSelectEnd(date);
+                              setIsCalendarEndOpen(false);
+                            }}
+                            onNavigate={(year, month) => setViewDateEnd(new Date(year, month, 1))}
+                            isDateDisabled={isEndDateDisabled}
+                            label="Data de Devolução"
+                          />
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="relative group">
+                      <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none text-gray-500">
+                        <span className="material-symbols-outlined text-[20px]">schedule</span>
+                      </div>
+                      <button type="button" onClick={() => setIsTimeEndOpen(!isTimeEndOpen)}
+                        className="w-full text-left pl-10 pr-8 py-4 bg-white/[0.03] border border-white/10 rounded-xl text-sm text-white font-bold transition-all focus:border-primary/50">
+                        <span>{timeEnd}</span>
+                      </button>
+                      {isTimeEndOpen && (
+                        <div className="absolute z-50 w-full mt-2 bg-black border border-white/10 rounded-2xl shadow-2xl max-h-48 overflow-y-auto custom-scrollbar">
+                          <ul className="p-2 text-sm font-medium text-gray-400 flex flex-col gap-1">
+                            {timeOptions.map(t => (
+                              <li key={t}>
+                                <button type="button" onClick={() => { setTimeEnd(t); setIsTimeEndOpen(false); }}
+                                  className="w-full text-center px-2 py-3 hover:text-primary hover:bg-white/5 rounded-lg transition-all duration-150 cursor-pointer">
+                                  {t}
+                                </button>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                    </div>
+                    {((error && !error.includes('retirada')) || warning) && (
+                      <p className={`text-[10px] font-bold ml-1 mt-1 ${error ? 'text-red-500' : 'text-yellow-500'}`}>
+                        {error || warning}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Seleção de Franquia */}
+              {plan === 'motorista' ? (
+                <div className="space-y-4">
+                  <label className="text-sm font-bold text-slate-400 uppercase tracking-widest ml-1">Franquia de Kilometragem</label>
+                  <div className="grid gap-3">
                     {[
                       { id: 'k3', label: '3.000km/mês', desc: 'Ideal para rodar pouco.' },
                       { id: 'k6', label: '6.000km/mês', desc: 'Para quem roda bastante.' },
@@ -679,63 +471,68 @@ Aguardo retorno para finalizar!`;
                       const isAvailable = price != null;
                       
                       return (
-                        <label key={f.id} className={`insurance-card flex items-center gap-3 p-2.5 rounded-xl border border-white/10 bg-white/[0.03] cursor-pointer group ${mileageFranchise === f.id ? 'active' : ''} ${!isAvailable ? 'opacity-30 pointer-events-none' : ''}`}>
-                          <input type="radio" name="franchise" value={f.id} checked={mileageFranchise === f.id} onChange={() => setMileageFranchise(f.id as any)} disabled={!isAvailable} />
-                          <div className="check-circle scale-90"></div>
+                        <label key={f.id} className={`insurance-card flex items-center gap-4 p-4 rounded-xl border border-white/10 bg-white/[0.03] cursor-pointer group ${mileageFranchise === f.id ? 'active' : ''} ${!isAvailable ? 'opacity-30 pointer-events-none' : ''}`}>
+                          <input type="radio" name="franchise" value={f.id} checked={mileageFranchise === f.id} onChange={() => setMileageFranchise(f.id as any)} disabled={!isAvailable} className="hidden" />
+                          <div className="check-circle"></div>
                           <div className="flex-1 min-w-0">
-                            <div className="flex justify-between items-center">
-                              <span className="text-[10px] font-black text-white uppercase tracking-wider">{f.label}</span>
-                              <span className="text-[10px] font-black text-primary">R$ {price}<span className="text-[8px] font-normal text-gray-500">/sem</span></span>
+                            <div className="flex justify-between items-center mb-1">
+                              <span className="text-xs font-black text-white uppercase tracking-wider">{f.label}</span>
+                              <span className="text-sm font-black text-primary">R$ {price}<span className="text-[10px] font-normal text-gray-500">/sem</span></span>
                             </div>
-                            <p className="text-[9px] text-gray-500 leading-tight group-hover:text-gray-400 transition-colors">{f.desc}</p>
+                            <p className="text-[10px] text-gray-500 leading-tight group-hover:text-gray-400 transition-colors">{f.desc}</p>
                           </div>
                         </label>
                       );
                     })}
                   </div>
-                  <p className="text-[9px] text-primary/80 font-bold text-center mt-2">* Desconto de R$100,00 de pontualidade na semana</p>
+                  <p className="text-[10px] text-primary/80 font-bold text-center mt-2">* Desconto de R$100,00 de pontualidade na semana incluso</p>
+                </div>
+              ) : (
+                <div className="p-4 bg-primary/10 border border-primary/20 rounded-2xl">
+                  <div className="flex items-center gap-3 mb-2">
+                    <span className="material-symbols-outlined text-primary">shield</span>
+                    <span className="text-xs font-black text-white uppercase tracking-wider">Proteção Inclusa</span>
+                  </div>
+                  <p className="text-[10px] text-gray-400 leading-relaxed">
+                    Para sua tranquilidade, a proteção total (roubo, colisão e terceiros) já está inclusa no valor da diária. Limite de 600km por período (R$ 0,50/km excedente).
+                  </p>
                 </div>
               )}
 
-              <div className="mt-1 pt-3 border-t border-white/5 space-y-2">
-                <div className="space-y-1.5">
-                  <div className="flex justify-between text-[10px] font-semibold tracking-wide">
-                    <span className="text-gray-500 uppercase">Locação ({plan === 'pf' ? `${totals.days} dias` : `${totals.weeks} sem.`})</span>
-                    <span className="text-white">R$ {totals.carTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+              {/* FOOTER FIXO (STICKY ML) */}
+              <div className="fixed bottom-0 left-0 right-0 z-50 bg-black/95 sm:bg-[#121214] border-t border-white/10 sm:border-none p-4 sm:p-0 sm:static sm:mt-12 backdrop-blur-xl sm:backdrop-blur-none">
+                <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-6">
+                  
+                  {/* Resumo do Preço */}
+                  <div className="flex justify-between sm:flex-col w-full sm:w-auto items-center sm:items-start">
+                    <span className="text-slate-400 text-sm font-medium">Total estimado ({plan === 'pf' ? `${totals.days} dias` : `${totals.weeks} sem.`})</span>
+                    <div className="text-3xl font-bold text-primary">
+                      R$ {totals.total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                    </div>
                   </div>
-                  <div className="flex justify-between text-[10px] font-semibold tracking-wide">
-                    <span className="text-gray-500 uppercase">Proteção</span>
-                    <span className="text-emerald-400 font-black uppercase">Inclusa</span>
-                  </div>
-                  <div className="flex justify-between items-center bg-white/[0.03] px-2 py-1.5 rounded-lg border border-white/5">
-                    <span className="text-[9px] font-black uppercase text-gray-500 tracking-wider">Período Total</span>
-                    <span className="summary-badge text-[9px] px-1.5 py-0.5">{plan === 'pf' ? `${totals.days} dia(s)` : `${totals.weeks} semana(s) (${totals.days} dias)`}</span>
-                  </div>
+
+                  {/* Botão de Confirmação */}
+                  <button
+                    onClick={handleConfirm}
+                    disabled={!!error || !dateStart || !dateEnd}
+                    className="w-full sm:w-auto px-10 py-4 bg-primary text-black font-black uppercase tracking-widest text-xs rounded-xl transition-all disabled:opacity-30 disabled:grayscale disabled:cursor-not-allowed hover:bg-white hover:scale-[1.02] active:scale-95 flex items-center justify-center shadow-2xl shadow-primary/20"
+                  >
+                    <span className="material-symbols-outlined mr-2">check_circle</span>
+                    Confirmar Reserva
+                  </button>
                 </div>
-
-                <div className="flex justify-between items-baseline pt-1">
-                  <div className="flex flex-col">
-                    <span className="text-[9px] font-black text-gray-500 uppercase tracking-[0.2em]">Total Estimado</span>
-                    <span className="text-[8px] text-primary/60 font-medium">Impostos inclusos</span>
+                
+                {/* Mensagem de Erro Global */}
+                {error && (
+                  <div className="text-red-400 text-[10px] font-bold mt-3 text-center sm:text-left animate-pulse flex items-center justify-center sm:justify-start gap-2">
+                    <span className="material-symbols-outlined text-sm">warning</span>
+                    {error}
                   </div>
-                  <div className="text-right">
-                    <span className="text-2xl font-black text-white tracking-tighter transition-all duration-300">R$ {totals.total.toLocaleString('pt-BR')}</span>
-                  </div>
-                </div>
-
-                <div className="h-2"></div>
-
-                <button 
-                  onClick={handleConfirm} 
-                  disabled={!!error || !dateStart || !dateEnd}
-                  className={`btn-confirm w-full py-3 rounded-xl flex items-center justify-center gap-2 active:scale-95 text-xs transition-all ${!!error || !dateStart || !dateEnd ? 'opacity-30 grayscale cursor-not-allowed' : 'opacity-100 hover:shadow-xl hover:shadow-primary/20'}`}
-                >
-                  <span>Confirmar Reserva</span>
-                  <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
-                </button>
+                )}
               </div>
+
             </div>
-          </aside>
+          </div>
         </div>
       </main>
     </div>
