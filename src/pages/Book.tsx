@@ -1,7 +1,8 @@
-import { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { CARS } from '../constants';
 import { useRentalCalendar } from '../hooks/useRentalCalendar';
+import { Car } from '../types';
 
 const ALL_CARS = CARS;
 
@@ -22,7 +23,8 @@ export default function Book() {
   const [plan, setPlan] = useState<'motorista' | 'pf'>(qPlan === 'pf' ? 'pf' : 'motorista');
   const [timeStart, setTimeStart] = useState(qTimeStart);
   const [timeEnd, setTimeEnd] = useState(qTimeEnd);
-  const [insurance, setInsurance] = useState(45);
+  // insurance não estava sendo usado na lógica de cálculo (insTotal = 0 constante), mantido apenas para estado
+  const [insurance] = useState(45); 
   const [mileageFranchise, setMileageFranchise] = useState<'k3' | 'k6' | 'free'>('k3');
   
   const [search, setSearch] = useState('');
@@ -51,6 +53,13 @@ export default function Book() {
 
   const currentCar = useMemo(() => ALL_CARS.find(c => c.id === selectedCarId) || ALL_CARS[0], [selectedCarId]);
 
+  // Função helper para centralizar regra de preço do veículo
+  const getCarPrice = (car: Car) => {
+    if (plan === 'pf') return car.priceDay || 0;
+    const pricing = car.pricingApp?.[location as 'fsa' | 'ssa'];
+    return pricing?.[mileageFranchise] ?? null;
+  };
+
   const filteredCars = useMemo(() => {
     let filtered = ALL_CARS.filter(c => {
       if (plan === 'pf' && !c.availablePF) return false;
@@ -58,50 +67,25 @@ export default function Book() {
       if (categories.length && !categories.includes(c.category)) return false;
       if (features.length && !features.every(f => c.feats?.includes(f))) return false;
       
-      let p = 0;
-      if (plan === 'pf') {
-        p = c.priceDay;
-      } else {
-        const pricing = c.pricingApp?.[location as 'fsa' | 'ssa'];
-        p = pricing?.[mileageFranchise] || 0;
-      }
+      const p = getCarPrice(c);
+      // Se p === null, mantemos como 0 temporariamente para o filtro (preservando o comportamento visual original "Troque a franquia")
+      const priceToCompare = p ?? 0;
       
-      if (p > maxPrice && p !== 0) return false;
+      if (priceToCompare > maxPrice && priceToCompare !== 0) return false;
       return true;
     });
 
-    if (sort === 'price-asc') {
-      filtered.sort((a, b) => {
-        let pa = 0;
-        let pb = 0;
-        if (plan === 'pf') {
-          pa = a.priceDay;
-          pb = b.priceDay;
-        } else {
-          pa = a.pricingApp?.[location as 'fsa' | 'ssa']?.[mileageFranchise] || 0;
-          pb = b.pricingApp?.[location as 'fsa' | 'ssa']?.[mileageFranchise] || 0;
-        }
-        return pa - pb;
-      });
-    } else if (sort === 'price-desc') {
-      filtered.sort((a, b) => {
-        let pa = 0;
-        let pb = 0;
-        if (plan === 'pf') {
-          pa = a.priceDay;
-          pb = b.priceDay;
-        } else {
-          pa = a.pricingApp?.[location as 'fsa' | 'ssa']?.[mileageFranchise] || 0;
-          pb = b.pricingApp?.[location as 'fsa' | 'ssa']?.[mileageFranchise] || 0;
-        }
-        return pb - pa;
-      });
-    } else {
-      filtered.sort((a, b) => a.name.localeCompare(b.name));
-    }
+    filtered.sort((a, b) => {
+      const pa = getCarPrice(a) ?? 0;
+      const pb = getCarPrice(b) ?? 0;
+      
+      if (sort === 'price-asc') return pa - pb;
+      if (sort === 'price-desc') return pb - pa;
+      return a.name.localeCompare(b.name);
+    });
 
     return filtered;
-  }, [search, categories, features, maxPrice, sort, plan, location]);
+  }, [search, categories, features, maxPrice, sort, plan, location, mileageFranchise]); // BUG CORRIGIDO: mileageFranchise adicionado
 
   const toggleCategory = (cat: string) => {
     setCategories(prev => prev.includes(cat) ? prev.filter(c => c !== cat) : [...prev, cat]);
@@ -131,20 +115,18 @@ export default function Book() {
 
   const calculateTotals = () => {
     let days = totalDays;
-
     let carTotal = 0;
     let weeks = 0;
+    
     if (plan === 'pf') {
-      carTotal = currentCar.priceDay * days;
+      carTotal = (currentCar.priceDay || 0) * days;
     } else {
-      // Motorista de App
-      const pricing = currentCar.pricingApp?.[location as 'fsa' | 'ssa'];
-      const weeklyPrice = pricing?.[mileageFranchise] || 0;
+      const weeklyPrice = getCarPrice(currentCar) ?? 0;
       weeks = Math.round(days / 7);
       carTotal = weeklyPrice * weeks;
     }
 
-    const insTotal = 0;
+    const insTotal = 0; // Proteção inclusa
     const total = carTotal + insTotal;
 
     return { days, weeks, carTotal, insTotal, total };
@@ -157,20 +139,11 @@ export default function Book() {
       return;
     }
 
-    // Backend validation
     try {
       const response = await fetch('/api/validate-reservation', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          plan,
-          dateStart,
-          dateEnd,
-          timeStart,
-          timeEnd
-        }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ plan, dateStart, dateEnd, timeStart, timeEnd }),
       });
 
       if (!response.ok) {
@@ -179,8 +152,8 @@ export default function Book() {
         return;
       }
     } catch (err) {
-      console.error('Backend validation error:', err);
-      // If backend is down, we still have frontend validation, but let's be safe
+      console.warn('Backend indisponível, utilizando fallback de validação do frontend.', err);
+      // Fallback seguro: O frontend já validou a integridade dos dados, podemos prosseguir com a reserva
     }
 
     const locName = location === 'fsa' ? 'Feira de Santana, BA' : 'Salvador, BA';
@@ -204,7 +177,7 @@ ${plan === 'motorista' ? `*Franquia:* ${franchiseName}\n` : ''}*Retirada:* ${for
 Aguardo retorno para finalizar!`;
 
     const encodedMessage = encodeURIComponent(message);
-    const whatsappUrl = `https://wa.me/557581333333?text=${encodedMessage}`;
+    const whatsappUrl = `https://wa.me/5575981333333?text=${encodedMessage}`;
     
     window.open(whatsappUrl, '_blank');
   };
@@ -214,6 +187,7 @@ Aguardo retorno para finalizar!`;
       <div id="spotlight"></div>
       
       <header className="fixed top-0 left-0 right-0 z-50 glass-panel border-b-0" style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+        {/* HTML do header idêntico */}
         <div className="max-w-[1600px] mx-auto px-6 h-16 flex items-center justify-between">
           <Link to="/" className="hover:opacity-80 transition-opacity">
             <img src="/images/logo.png" decoding="async" alt="FlexLoc" className="h-7 w-auto object-contain" />
@@ -231,7 +205,6 @@ Aguardo retorno para finalizar!`;
       <main className="flex-grow pt-20 min-h-screen" style={{ background: 'radial-gradient(ellipse at 50% -10%,#151508 0%,#050505 40%,#000000 100%)' }}>
         <div className="max-w-[1600px] mx-auto px-4 py-6 flex flex-col lg:flex-row gap-5 items-start">
           
-          {/* LEFT: FILTER SIDEBAR */}
           <aside className="w-full lg:w-[240px] shrink-0 lg:sticky lg:top-24 flex flex-col gap-4">
             <div className="glass-panel rounded-2xl p-5 flex flex-col gap-5">
               <div className="flex items-center justify-between">
@@ -266,7 +239,7 @@ Aguardo retorno para finalizar!`;
                 <p className="text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-2">Preço Máximo / Dia</p>
                 <p className="text-primary font-bold text-base mb-3">R$ <span>{maxPrice}</span></p>
                 <input type="range" className="range-slider" min="50" max="1300" step="10" value={maxPrice} onChange={e => setMaxPrice(Number(e.target.value))}
-                  style={{ '--pct': `${((maxPrice - 50) / (1300 - 50)) * 100}%` } as any} />
+                  style={{ '--pct': `${((maxPrice - 50) / (1300 - 50)) * 100}%` } as React.CSSProperties} />
                 <div className="flex justify-between text-sm text-gray-600 mt-1">
                   <span>R$50</span><span>R$1300</span>
                 </div>
@@ -288,7 +261,6 @@ Aguardo retorno para finalizar!`;
             </div>
           </aside>
 
-          {/* CENTER: CAR GRID */}
           <div className="flex-1 min-w-0 relative">
             <div className="bg-text-decoration">FLEXLOC</div>
 
@@ -325,7 +297,7 @@ Aguardo retorno para finalizar!`;
                 let unavailable = false;
 
                 if (plan === 'pf') {
-                  displayPrice = c.priceDay;
+                  displayPrice = c.priceDay || '-';
                   priceLabel = 'Por dia';
                   unavailable = !c.availablePF;
                 } else {
@@ -333,11 +305,9 @@ Aguardo retorno para finalizar!`;
                   const price = pricing?.[mileageFranchise];
                   displayPrice = price ?? '-';
                   
-                  // Only mark as totally unavailable if it has NO pricing for this city at all
                   const hasAnyPricing = pricing && (pricing.k3 !== null || pricing.k6 !== null || pricing.free !== null);
                   unavailable = !hasAnyPricing;
                   
-                  // If it has pricing but not for THIS franchise, we'll handle it in the display
                   const isFranchiseUnavailable = pricing && pricing[mileageFranchise] === null;
                   if (isFranchiseUnavailable && !unavailable) {
                     displayPrice = 'Troque a franquia';
@@ -347,7 +317,7 @@ Aguardo retorno para finalizar!`;
                 const isSelected = selectedCarId === c.id;
 
                 return (
-                  <div key={c.id} onClick={() => !unavailable && setSelectedCarId(c.id)}
+                  <div key={c.id} onClick={() => !unavailable && setSelectedCarId(c.id as number)}
                     className={`group car-card rounded-3xl p-6 flex flex-col relative transition-all duration-300 ${unavailable ? 'opacity-40 pointer-events-none' : 'cursor-pointer hover:shadow-2xl hover:shadow-primary/10'} ${isSelected ? 'bg-white/[0.06] border border-primary/30' : 'bg-white/[0.03] border border-white/5'}`}>
                     <div className="absolute -right-10 -top-10 w-40 h-40 bg-primary/5 rounded-full blur-3xl pointer-events-none transition-opacity group-hover:opacity-100 opacity-0"></div>
                     <div className="relative h-48 w-full -mt-4 mb-4 flex items-center justify-center z-10">
@@ -366,7 +336,7 @@ Aguardo retorno para finalizar!`;
                       </div>
                     </div>
                     <div className="grid grid-cols-3 gap-3 mb-6 border-t border-white/5 pt-5 relative z-10">
-                      {c.feats.slice(0, 3).map(f => (
+                      {c.feats?.slice(0, 3).map(f => (
                         <div key={f} className="flex flex-col items-center gap-2 text-center">
                           <span className="material-symbols-outlined text-gray-400 text-lg font-light">{FEAT_ICONS[f]}</span>
                           <span className="text-[9px] text-gray-500 uppercase tracking-widest font-bold">{FEAT_LABELS[f]}</span>
@@ -382,7 +352,7 @@ Aguardo retorno para finalizar!`;
             </div>
 
             {filteredCars.length === 0 && (
-              <div className="no-results show">
+              <div className="no-results show flex flex-col items-center justify-center py-20">
                 <span className="material-symbols-outlined text-5xl text-gray-700 block mb-4">directions_car</span>
                 <p className="text-gray-500">Nenhum veículo encontrado com esses filtros.</p>
                 <button onClick={resetFilters} className="mt-4 text-primary text-sm underline">Limpar filtros</button>
@@ -390,7 +360,6 @@ Aguardo retorno para finalizar!`;
             )}
           </div>
 
-          {/* RIGHT: BOOKING PANEL */}
           <aside className="w-full lg:w-[340px] shrink-0 lg:sticky lg:top-20">
             <div className="glass-panel rounded-[24px] p-4 flex flex-col gap-3 overflow-visible relative">
               <div className="absolute -top-10 -right-10 w-40 h-40 bg-primary/10 blur-[60px] pointer-events-none rounded-full"></div>

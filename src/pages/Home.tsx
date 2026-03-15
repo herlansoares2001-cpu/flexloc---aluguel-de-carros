@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { CARS, TESTIMONIALS } from '../constants';
 import { useRentalCalendar } from '../hooks/useRentalCalendar';
@@ -72,7 +72,6 @@ export default function Home() {
       return;
     }
 
-    // Backend validation
     try {
       const response = await fetch('/api/validate-reservation', {
         method: 'POST',
@@ -94,7 +93,8 @@ export default function Home() {
         return;
       }
     } catch (err) {
-      console.error('Backend validation error:', err);
+      console.warn('Backend indisponível, seguindo com fallback da validação do frontend.', err);
+      // Evitamos bloquear completamente o usuário por erro de CORS/network se a validação do browser já ocorreu com sucesso
     }
 
     const params = new URLSearchParams({ loc: location, tipo, plan, dateStart, dateEnd, timeStart, timeEnd });
@@ -156,7 +156,7 @@ export default function Home() {
             poster="/images/hero.png"
             disableRemotePlayback 
             onEnded={() => setIsVideoPlaying(false)}
-            style={{ transform: 'translate3d(0, 0, 0) scale(1.01)', willChange: 'transform', backfaceVisibility: 'hidden', imageRendering: '-webkit-optimize-contrast', WebkitFontSmoothing: 'antialiased' } as any} 
+            style={{ transform: 'translate3d(0, 0, 0) scale(1.01)', willChange: 'transform', backfaceVisibility: 'hidden', imageRendering: '-webkit-optimize-contrast', WebkitFontSmoothing: 'antialiased' } as React.CSSProperties} 
             className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ease-in-out ${isVideoPlaying ? 'opacity-100' : 'opacity-0'}`}
           >
             <source src="/images/videos/Vídeo background.mp4" type="video/mp4" />

@@ -3,6 +3,11 @@ import flatpickr from 'flatpickr';
 import { Portuguese } from 'flatpickr/dist/l10n/pt.js';
 import { validateRental } from '../utils/rentalValidation';
 
+// Interface auxiliar para evitar o uso de 'any' no target do evento flatpickr
+interface FlatpickrDayElement extends HTMLElement {
+  dateObj?: Date;
+}
+
 export function useRentalCalendar(plan: 'motorista' | 'pf', defaultStart = '', defaultEnd = '') {
   const dateStartRef = useRef<HTMLInputElement>(null);
   const dateEndRef = useRef<HTMLInputElement>(null);
@@ -32,12 +37,10 @@ export function useRentalCalendar(plan: 'motorista' | 'pf', defaultStart = '', d
   const updateEndDateConstraints = (start: Date | undefined, currentPlan: 'motorista' | 'pf') => {
     if (!fpEnd.current) return;
 
-    // Normalize start to midnight for consistent calculations
     const startMidnight = start ? new Date(start.getFullYear(), start.getMonth(), start.getDate()) : null;
     const now = new Date();
     const nowMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     
-    // Rule 1: Minimum days
     const minDays = currentPlan === 'motorista' ? 7 : 3;
     const minEnd = startMidnight 
       ? new Date(startMidnight.getTime() + minDays * 86400000) 
@@ -45,28 +48,22 @@ export function useRentalCalendar(plan: 'motorista' | 'pf', defaultStart = '', d
     
     try {
       if (typeof fpEnd.current.set === 'function') {
-        // Set minDate based on the plan's minimum days
         fpEnd.current.set('minDate', minEnd);
         
-        // Rule 2: Multiples and specific disabled dates
-        const disableFunctions: any[] = [
-          // Sunday is closed
+        const disableFunctions: Array<(date: Date) => boolean> = [
           function(date: Date) {
             return date.getDay() === 0;
           }
         ];
 
         if (currentPlan === 'motorista') {
-          // Motorista: Must be multiples of 7 starting from the start date
           if (startMidnight) {
             disableFunctions.push(function(date: Date) {
               const dateMidnight = new Date(date.getFullYear(), date.getMonth(), date.getDate());
               const diffDays = Math.round((dateMidnight.getTime() - startMidnight.getTime()) / 86400000);
-              // Disable if less than 7 days OR not a multiple of 7
               return diffDays < 7 || diffDays % 7 !== 0;
             });
           } else {
-            // No start date selected yet, just enforce min 7 days from today
             disableFunctions.push(function(date: Date) {
               const dateMidnight = new Date(date.getFullYear(), date.getMonth(), date.getDate());
               const diffDays = Math.round((dateMidnight.getTime() - nowMidnight.getTime()) / 86400000);
@@ -81,7 +78,6 @@ export function useRentalCalendar(plan: 'motorista' | 'pf', defaultStart = '', d
       console.error('Error setting constraints', e);
     }
 
-    // Rule 3: Automatic Date Adjustment (Only if current selection is invalid)
     const currentEnd = fpEnd.current.selectedDates[0];
     const currentEndMidnight = currentEnd ? new Date(currentEnd.getFullYear(), currentEnd.getMonth(), currentEnd.getDate()) : null;
 
@@ -93,20 +89,17 @@ export function useRentalCalendar(plan: 'motorista' | 'pf', defaultStart = '', d
         const diffDays = Math.round((currentEndMidnight.getTime() - startMidnight.getTime()) / 86400000);
         
         if (currentPlan === 'motorista') {
-          // For motorista, invalid if < 7 or not multiple of 7
           if (diffDays < 7 || diffDays % 7 !== 0) {
             isInvalid = true;
             suggestedDays = 7;
           }
         } else {
-          // For PF, only invalid if < 3
           if (diffDays < 3) {
             isInvalid = true;
             suggestedDays = 3;
           }
         }
 
-        // Also invalid if Sunday
         if (currentEndMidnight.getDay() === 0) {
           isInvalid = true;
         }
@@ -114,7 +107,6 @@ export function useRentalCalendar(plan: 'motorista' | 'pf', defaultStart = '', d
 
       if (isInvalid) {
         let suggestedEnd = new Date(startMidnight.getTime() + suggestedDays * 86400000);
-        // If suggested end is Sunday, move to Monday
         if (suggestedEnd.getDay() === 0) {
           suggestedEnd = new Date(suggestedEnd.getTime() + 86400000);
         }
@@ -143,7 +135,6 @@ export function useRentalCalendar(plan: 'motorista' | 'pf', defaultStart = '', d
         disableMobile: true,
         disable: [
           function(date) {
-            // Sunday is closed
             return date.getDay() === 0;
           }
         ],
@@ -157,7 +148,7 @@ export function useRentalCalendar(plan: 'motorista' | 'pf', defaultStart = '', d
             updateEndDateConstraints(selectedDates[0], planRef.current);
           }
         },
-        onDayCreate: (dObj, dStr, fp, dayElem: any) => {
+        onDayCreate: (dObj, dStr, fp, dayElem: FlatpickrDayElement) => {
           dayElem.classList.add('transition-all', 'duration-300');
           const start = dateStartValue.current ? new Date(dateStartValue.current + 'T12:00:00') : null;
           const end = dateEndValue.current ? new Date(dateEndValue.current + 'T12:00:00') : null;
@@ -190,7 +181,6 @@ export function useRentalCalendar(plan: 'motorista' | 'pf', defaultStart = '', d
         disableMobile: true,
         disable: [
           function(date) {
-            // Sunday is closed
             return date.getDay() === 0;
           }
         ],
@@ -202,7 +192,6 @@ export function useRentalCalendar(plan: 'motorista' | 'pf', defaultStart = '', d
             setDateEnd(formatted);
             setError('');
             
-            // Saturday warning
             if (d.getDay() === 6) {
               setWarning('Sábados a devolução deve ocorrer até 12:00.');
             } else {
@@ -210,7 +199,7 @@ export function useRentalCalendar(plan: 'motorista' | 'pf', defaultStart = '', d
             }
           }
         },
-        onDayCreate: (dObj, dStr, fp, dayElem: any) => {
+        onDayCreate: (dObj, dStr, fp, dayElem: FlatpickrDayElement) => {
           dayElem.classList.add('transition-all', 'duration-300');
           const start = dateStartValue.current ? new Date(dateStartValue.current + 'T12:00:00') : null;
           const end = dateEndValue.current ? new Date(dateEndValue.current + 'T12:00:00') : null;
@@ -245,9 +234,8 @@ export function useRentalCalendar(plan: 'motorista' | 'pf', defaultStart = '', d
         fpEnd.current = null;
       }
     };
-  }, []); // Run once on mount
+  }, []);
 
-  // Update constraints when plan changes
   useEffect(() => {
     const start = fpStart.current?.selectedDates[0];
     updateEndDateConstraints(start, plan);
