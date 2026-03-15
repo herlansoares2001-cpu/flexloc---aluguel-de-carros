@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useRef } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { CARS } from '../constants';
 import { useRentalCalendar } from '../hooks/useRentalCalendar';
@@ -60,6 +60,26 @@ export default function Book() {
     validateDates,
     totalDays
   } = useRentalCalendar(plan, qDateStart, qDateEnd);
+
+  const calendarStartRef = useRef<HTMLDivElement>(null);
+  const calendarEndRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (calendarStartRef.current && !calendarStartRef.current.contains(event.target as Node)) {
+        setIsCalendarStartOpen(false);
+      }
+      if (calendarEndRef.current && !calendarEndRef.current.contains(event.target as Node)) {
+        setIsCalendarEndOpen(false);
+      }
+    }
+    
+    if (isCalendarStartOpen || isCalendarEndOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isCalendarStartOpen, isCalendarEndOpen]);
 
   const currentCar = useMemo(() => ALL_CARS.find(c => c.id === selectedCarId) || ALL_CARS[0], [selectedCarId]);
 
@@ -501,7 +521,7 @@ Aguardo retorno para finalizar!`;
                       <span className="text-[9px] font-black text-primary animate-pulse">Min. 3d</span>
                     )}
                   </label>
-                  <div className="relative group">
+                  <div className={`relative group ${isCalendarStartOpen ? 'z-[60]' : 'z-10'}`} ref={calendarStartRef}>
                     <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none text-gray-500 transition-colors group-hover:text-primary z-10">
                       <span className="material-symbols-outlined text-[16px]">calendar_today</span>
                     </div>
@@ -518,7 +538,7 @@ Aguardo retorno para finalizar!`;
                     </button>
 
                     {isCalendarStartOpen && (
-                      <div className="absolute z-[100] left-0 mt-2 w-72 sm:w-80 -translate-x-1/2 sm:translate-x-0">
+                      <div className="absolute z-[100] left-0 right-0 sm:right-auto mt-2 sm:w-80">
                         <Calendar 
                           currentMonth={viewDateStart.getMonth()}
                           currentYear={viewDateStart.getFullYear()}
@@ -570,7 +590,7 @@ Aguardo retorno para finalizar!`;
                     Fim
                     {plan === 'motorista' && <span className="text-[9px] font-black text-primary">Ciclo Semanal</span>}
                   </label>
-                  <div className="relative group">
+                  <div className={`relative group ${isCalendarEndOpen ? 'z-[60]' : 'z-10'}`} ref={calendarEndRef}>
                     <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none text-gray-500 transition-colors group-hover:text-primary z-10">
                       <span className="material-symbols-outlined text-[16px]">event_repeat</span>
                     </div>
@@ -587,7 +607,7 @@ Aguardo retorno para finalizar!`;
                     </button>
 
                     {isCalendarEndOpen && (
-                      <div className="absolute z-[100] right-0 mt-2 w-72 sm:w-80 translate-x-1/2 sm:translate-x-0">
+                      <div className="absolute z-[100] left-0 right-0 sm:right-auto mt-2 sm:w-80">
                         <Calendar 
                           currentMonth={viewDateEnd.getMonth()}
                           currentYear={viewDateEnd.getFullYear()}
@@ -673,7 +693,7 @@ Aguardo retorno para finalizar!`;
                     ].map(f => {
                       const pricing = currentCar.pricingApp?.[location as 'fsa' | 'ssa'];
                       const price = pricing?.[f.id as 'k3' | 'k6' | 'free'];
-                      const isAvailable = price !== null;
+                      const isAvailable = price != null;
                       
                       return (
                         <label key={f.id} className={`insurance-card flex items-center gap-3 p-2.5 rounded-xl border border-white/10 bg-white/[0.03] cursor-pointer group ${mileageFranchise === f.id ? 'active' : ''} ${!isAvailable ? 'opacity-30 pointer-events-none' : ''}`}>

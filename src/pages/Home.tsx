@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { CARS, TESTIMONIALS } from '../constants';
 import { useRentalCalendar } from '../hooks/useRentalCalendar';
@@ -40,6 +40,26 @@ export default function Home() {
     validateDates,
     totalDays
   } = useRentalCalendar(plan);
+
+  const calendarStartRef = useRef<HTMLDivElement>(null);
+  const calendarEndRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (calendarStartRef.current && !calendarStartRef.current.contains(event.target as Node)) {
+        setIsCalendarStartOpen(false);
+      }
+      if (calendarEndRef.current && !calendarEndRef.current.contains(event.target as Node)) {
+        setIsCalendarEndOpen(false);
+      }
+    }
+    
+    if (isCalendarStartOpen || isCalendarEndOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isCalendarStartOpen, isCalendarEndOpen]);
 
   useEffect(() => {
     document.title = "FlexLoc — Aluguel de Carros Inteligente e Sem Burocracia";
@@ -275,7 +295,7 @@ export default function Home() {
                               <span className="text-primary animate-pulse">Min. 3d</span>
                             )}
                           </label>
-                          <div className={`relative group/field ${isCalendarStartOpen ? 'z-50' : 'z-10'}`}>
+                          <div className={`relative group/field ${isCalendarStartOpen ? 'z-50' : 'z-10'}`} ref={calendarStartRef}>
                             <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none z-10">
                               <span className="material-symbols-outlined text-primary text-lg font-light">calendar_today</span>
                             </div>
@@ -292,7 +312,7 @@ export default function Home() {
                             </button>
 
                             {isCalendarStartOpen && (
-                              <div className="absolute z-[100] left-0 mt-2 w-[310px] sm:w-[340px]">
+                              <div className="absolute z-[100] left-0 right-0 sm:right-auto mt-2 sm:w-80">
                                   <Calendar 
                                    currentMonth={viewDateStart.getMonth()}
                                    currentYear={viewDateStart.getFullYear()}
@@ -346,7 +366,7 @@ export default function Home() {
                             Devolução
                             {tipo === 'app' && <span className="text-primary">Ciclo Semanal</span>}
                           </label>
-                          <div className={`relative group/field ${isCalendarEndOpen ? 'z-50' : 'z-10'}`}>
+                          <div className={`relative group/field ${isCalendarEndOpen ? 'z-50' : 'z-10'}`} ref={calendarEndRef}>
                             <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none z-10">
                               <span className="material-symbols-outlined text-primary text-lg font-light">event_repeat</span>
                             </div>
@@ -363,7 +383,7 @@ export default function Home() {
                             </button>
 
                             {isCalendarEndOpen && (
-                              <div className="absolute z-[100] left-0 mt-2 w-[310px] sm:w-[340px]">
+                              <div className="absolute z-[100] left-0 right-0 sm:right-auto mt-2 sm:w-80">
                                   <Calendar 
                                    currentMonth={viewDateEnd.getMonth()}
                                    currentYear={viewDateEnd.getFullYear()}
