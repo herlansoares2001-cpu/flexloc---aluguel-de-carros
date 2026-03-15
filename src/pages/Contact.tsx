@@ -1,8 +1,16 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import Navbar from '../components/Navbar';
 import { Link } from 'react-router-dom';
 
 export default function Contact() {
+    useEffect(() => {
+        document.title = "Contato | FlexLoc — Aluguel de Carros Inteligente";
+        const metaDesc = document.querySelector('meta[name="description"]');
+        if (metaDesc) {
+            metaDesc.setAttribute('content', 'Entre em contato com a FlexLoc. WhatsApp dos consultores Netu e Adailton, e-mail oficial e localização da sede em Feira de Santana.');
+        }
+    }, []);
+
     return (
         <div className="min-h-screen bg-black flex flex-col">
             <div id="spotlight"></div>

@@ -17,7 +17,7 @@ export default function Navbar({ transparent = false }: NavbarProps) {
           </Link>
           <div className="hidden md:flex items-center gap-10">
             <a className="text-[11px] font-bold uppercase tracking-widest text-white/60 hover:text-primary transition-all duration-300 hover:tracking-[0.25em]" href="/#fleet">Frota</a>
-            <a className="text-[11px] font-bold uppercase tracking-widest text-white/60 hover:text-primary transition-all duration-300 hover:tracking-[0.25em]" href="/#">Sobre</a>
+            <a className="text-[11px] font-bold uppercase tracking-widest text-white/60 hover:text-primary transition-all duration-300 hover:tracking-[0.25em]" href="/#about">Sobre</a>
             <Link className="text-[11px] font-bold uppercase tracking-widest text-white/60 hover:text-primary transition-all duration-300 hover:tracking-[0.25em]" to="/contact">Contato</Link>
           </div>
           <div className="flex items-center gap-4">
@@ -38,7 +38,7 @@ export default function Navbar({ transparent = false }: NavbarProps) {
       <div className={`md:hidden absolute top-20 left-0 w-full bg-background-dark/95 backdrop-blur-xl border-b border-white/10 transition-all duration-300 overflow-hidden ${isMobileMenuOpen ? 'max-h-64 opacity-100' : 'max-h-0 opacity-0'}`}>
         <div className="flex flex-col px-6 py-4 gap-4">
           <a className="text-sm font-bold uppercase tracking-widest text-white/80 hover:text-primary transition-colors" href="/#fleet" onClick={() => setIsMobileMenuOpen(false)}>Frota</a>
-          <a className="text-sm font-bold uppercase tracking-widest text-white/80 hover:text-primary transition-colors" href="/#" onClick={() => setIsMobileMenuOpen(false)}>Sobre</a>
+          <a className="text-sm font-bold uppercase tracking-widest text-white/80 hover:text-primary transition-colors" href="/#about" onClick={() => setIsMobileMenuOpen(false)}>Sobre</a>
           <Link className="text-sm font-bold uppercase tracking-widest text-white/80 hover:text-primary transition-colors" to="/contact" onClick={() => setIsMobileMenuOpen(false)}>Contato</Link>
         </div>
       </div>

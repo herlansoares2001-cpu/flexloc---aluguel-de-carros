@@ -448,7 +448,14 @@ export default function Home() {
                   </div>
                   <div className="flex flex-col items-center gap-1 text-center">
                     <span className="material-symbols-outlined text-gray-400 text-sm font-light">payments</span>
-                    <span className="text-[10px] text-gray-400 uppercase tracking-wide">Caução R$ 1.500</span>
+                    <span className="text-[10px] text-gray-400 uppercase tracking-wide">
+                      Caução R$ {(() => {
+                        if (plan === 'pf') return '1.500';
+                        if (car.catLabel === 'Black') return '2.500';
+                        if (car.catLabel === 'Comfort' || car.catLabel === 'Família') return '2.000';
+                        return '1.800';
+                      })()}
+                    </span>
                   </div>
                 </div>
                 <p className="text-gray-500 text-xs leading-relaxed mb-6 font-sans">
@@ -665,7 +672,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="py-24 px-6 lg:px-20 bg-background-dark relative overflow-hidden border-t border-white/5">
+      <section id="about" className="py-24 px-6 lg:px-20 bg-background-dark relative overflow-hidden border-t border-white/5">
         <div className="absolute top-0 right-0 w-1/3 h-full bg-primary/5 blur-[120px] rounded-full pointer-events-none"></div>
         <div className="max-w-[1400px] mx-auto">
             <div className="grid lg:grid-cols-12 gap-12 items-center">

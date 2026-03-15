@@ -210,6 +210,15 @@ export default function Book() {
     const formattedStart = dateStart ? new Date(dateStart + 'T12:00:00').toLocaleDateString('pt-BR') : '';
     const formattedEnd = dateEnd ? new Date(dateEnd + 'T12:00:00').toLocaleDateString('pt-BR') : '';
 
+    const getCaucao = (car: Car) => {
+      if (plan === 'pf') return 1500;
+      if (car.catLabel === 'Black') return 2500;
+      if (car.catLabel === 'Comfort' || car.catLabel === 'Família') return 2000;
+      return 1800;
+    };
+
+    const caucao = getCaucao(currentCar);
+
     const message = `Olá! Gostaria de confirmar uma reserva:
 
 *Veículo:* ${currentCar.name}
@@ -218,6 +227,7 @@ export default function Book() {
 ${plan === 'motorista' ? `*Franquia:* ${franchiseName}\n` : ''}*Retirada:* ${formattedStart} às ${timeStart}
 *Devolução:* ${formattedEnd} às ${timeEnd}
 *Proteção:* Inclusa
+*Caução:* R$ ${caucao.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
 *Período:* ${totals.days} dias ${totals.weeks > 0 ? `(${totals.weeks} sem.)` : ''}
 *Total Estimado:* R$ ${totals.total}
 
@@ -626,6 +636,15 @@ Aguardo retorno para finalizar!`;
                   <div className="flex justify-between text-[10px] font-semibold tracking-wide">
                     <span className="text-gray-500 uppercase">Proteção</span>
                     <span className="text-emerald-400 font-black uppercase">Inclusa</span>
+                  </div>
+                  <div className="flex justify-between text-[10px] font-semibold tracking-wide">
+                    <span className="text-gray-500 uppercase">Caução (Bloqueio)</span>
+                    <span className="text-white">R$ {(() => {
+                      if (plan === 'pf') return '1.500,00';
+                      if (currentCar.catLabel === 'Black') return '2.500,00';
+                      if (currentCar.catLabel === 'Comfort' || currentCar.catLabel === 'Família') return '2.000,00';
+                      return '1.800,00';
+                    })()}</span>
                   </div>
                   <div className="flex justify-between items-center bg-white/[0.03] px-2 py-1.5 rounded-lg border border-white/5">
                     <span className="text-[9px] font-black uppercase text-gray-500 tracking-wider">Período Total</span>
