@@ -100,16 +100,26 @@ export default function Home() {
       }
     };
 
+    // Mobile Auto-loop Carousel Animation
     let requestRef: number;
-    const animate = () => {
+    let lastTime = performance.now();
+    
+    const animate = (currentTime: number) => {
+      const deltaTime = currentTime - lastTime;
+      lastTime = currentTime;
+
       if (window.innerWidth < 768) {
         const containers = document.querySelectorAll('.auto-loop-mobile');
         containers.forEach(container => {
           if (container.getAttribute('data-is-touching') === 'true') return;
           
-          container.scrollLeft += 0.5; // Velocidade constante suave
+          // Velocidade: ~60px por segundo (1px por frame em 60fps)
+          const speed = 0.06; // px per ms
+          const increment = speed * deltaTime;
           
-          // Se chegou na metade (onde os itens duplicados começam), volta pro início
+          container.scrollLeft += increment;
+          
+          // Reinicia quando atinge a metade (início do set duplicado)
           if (container.scrollLeft >= container.scrollWidth / 2) {
              container.scrollLeft = 0;
           }
@@ -120,18 +130,31 @@ export default function Home() {
 
     requestRef = requestAnimationFrame(animate);
 
-    const handleTouchStart = (e: any) => e.currentTarget.setAttribute('data-is-touching', 'true');
+    const handleTouchStart = (e: any) => {
+      const container = e.currentTarget;
+      container.setAttribute('data-is-touching', 'true');
+      // Limpa qualquer timeout pendente para não retomar antes da hora
+      const timeoutId = container.getAttribute('data-resume-timeout');
+      if (timeoutId) clearTimeout(parseInt(timeoutId));
+    };
+
     const handleTouchEnd = (e: any) => {
-      setTimeout(() => {
-        const target = e.target.closest('.auto-loop-mobile');
-        if (target) target.setAttribute('data-is-touching', 'false');
-      }, 2000);
+      const container = e.currentTarget;
+      // Retoma após 3 segundos de inatividade
+      const timeoutId = window.setTimeout(() => {
+        container.setAttribute('data-is-touching', 'false');
+      }, 3000);
+      container.setAttribute('data-resume-timeout', timeoutId.toString());
     };
 
     const containers = document.querySelectorAll('.auto-loop-mobile');
     containers.forEach(c => {
-      c.addEventListener('touchstart', handleTouchStart);
-      c.addEventListener('touchend', handleTouchEnd);
+      c.addEventListener('touchstart', handleTouchStart, { passive: true });
+      c.addEventListener('touchend', handleTouchEnd, { passive: true });
+      // Também pausar no toque/click direto (para dispositivos híbridos)
+      c.addEventListener('mousedown', handleTouchStart);
+      c.addEventListener('mouseup', handleTouchEnd);
+      c.addEventListener('mouseleave', handleTouchEnd);
     });
 
     document.addEventListener('mousemove', handleMouseMove);
@@ -143,6 +166,9 @@ export default function Home() {
       containers.forEach(c => {
         c.removeEventListener('touchstart', handleTouchStart);
         c.removeEventListener('touchend', handleTouchEnd);
+        c.removeEventListener('mousedown', handleTouchStart);
+        c.removeEventListener('mouseup', handleTouchEnd);
+        c.removeEventListener('mouseleave', handleTouchEnd);
       });
     };
   }, []);
@@ -462,7 +488,7 @@ export default function Home() {
 
         <div className="flex overflow-x-auto no-scrollbar md:grid md:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-12 mt-0 pt-32 pb-12 -mx-6 px-6 md:mx-auto md:overflow-visible md:px-0 auto-loop-mobile">
           {[...CARS.filter(c => [2, 13, 15].includes(Number(c.id))), ...CARS.filter(c => [2, 13, 15].includes(Number(c.id)))].map((car, idx) => (
-            <div key={`${car.id}-${idx}`} className={`group card-glass rounded-xl p-8 pt-0 flex flex-col relative transition-all duration-500 hover:border-white/20 animate-on-scroll shrink-0 w-[85vw] sm:w-[380px] md:w-auto ${idx > 0 && idx < 3 ? `delay-${idx * 100}` : ''}`}>
+            <div key={`${car.id}-${idx}`} className={`group card-glass rounded-xl p-8 pt-0 flex flex-col relative transition-all duration-500 hover:border-white/20 animate-on-scroll shrink-0 w-[85vw] sm:w-[380px] md:w-auto ${idx > 0 && idx < 3 ? `delay-${idx * 100}` : ''} ${idx >= 3 ? 'md:hidden' : ''}`}>
               <div className="relative h-64 w-full -mt-16 mb-2 flex items-center justify-center z-20">
                 <img alt={car.name} decoding="async" loading="lazy" className="object-contain w-full h-full relative z-10 car-overlap drop-shadow-2xl" src={car.img || car.image} />
               </div>
@@ -600,7 +626,7 @@ export default function Home() {
                 { icon: 'trending_up', title: 'Trabalho ou Uso Pessoal', desc: 'Você pode usar seu carro Flexloc para trabalhar com aplicativos, fazer entregas, viajar ou usar no dia a dia. Liberdade total para dirigir.' }
               ][idx % 4];
               return (
-                <div key={idx} className={`group flex flex-col gap-6 animate-on-scroll shrink-0 w-[80vw] sm:w-[300px] md:w-auto ${idx < 4 ? `delay-${idx * 100}` : ''}`}>
+                <div key={idx} className={`group flex flex-col gap-6 animate-on-scroll shrink-0 w-[80vw] sm:w-[300px] md:w-auto ${idx < 4 ? `delay-${idx * 100}` : ''} ${idx >= 4 ? 'md:hidden' : ''}`}>
                     <div className="w-12 h-12 flex items-center justify-center rounded-full border border-white/5 bg-white/5 group-hover:border-primary/50 transition-colors duration-300">
                         <span className="material-symbols-outlined text-primary font-light text-2xl">{content.icon}</span>
                     </div>
@@ -636,7 +662,7 @@ export default function Home() {
                 { num: '04', icon: 'car_rental', title: 'Retire seu carro', desc: 'Com o cadastro aprovado e veículo disponível, é só retirar e começar a dirigir.' }
               ][idx % 4];
               return (
-                <div key={idx} className={`relative group z-10 flex flex-col items-center text-center animate-on-scroll shrink-0 w-[80vw] sm:w-[300px] md:w-auto ${idx < 4 ? `delay-${idx * 100}` : ''}`}>
+                <div key={idx} className={`relative group z-10 flex flex-col items-center text-center animate-on-scroll shrink-0 w-[80vw] sm:w-[300px] md:w-auto ${idx < 4 ? `delay-${idx * 100}` : ''} ${idx >= 4 ? 'md:hidden' : ''}`}>
                     <div className="absolute -top-10 left-1/2 -translate-x-1/2 text-[120px] font-bold text-white opacity-[0.03] select-none pointer-events-none leading-none">{step.num}</div>
                     <div className="w-4 h-4 rounded-full bg-background-dark border-2 border-primary mb-8 relative z-20 shadow-[0_0_15px_rgba(230,197,25,0.3)]"></div>
                     <div className="w-full h-48 bg-white/[0.02] rounded-lg mb-8 flex items-center justify-center border border-white/5 backdrop-blur-sm group-hover:border-white/10 transition-colors duration-500">
@@ -680,7 +706,7 @@ export default function Home() {
                 { icon: 'location_on', title: 'Unidades', desc: 'Atendimento especializado em Feira de Santana e Salvador.' }
               ][idx % 3];
               return (
-                <div key={idx} className="card-glass p-8 rounded-[2rem] border border-white/5 flex flex-col items-start gap-6 hover:border-primary/20 transition-all duration-500 group shrink-0 w-[85vw] sm:w-[380px] md:w-auto">
+                <div key={idx} className={`card-glass p-8 rounded-[2rem] border border-white/5 flex flex-col items-start gap-6 hover:border-primary/20 transition-all duration-500 group shrink-0 w-[85vw] sm:w-[380px] md:w-auto ${idx >= 3 ? 'md:hidden' : ''}`}>
                   <div className="w-12 h-12 flex items-center justify-center rounded-xl bg-white/5 text-primary group-hover:scale-110 transition-transform">
                     <span className="material-symbols-outlined font-light fill-current">{metric.icon}</span>
                   </div>
