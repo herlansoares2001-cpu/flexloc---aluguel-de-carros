@@ -113,8 +113,8 @@ export default function Home() {
         containers.forEach(container => {
           if (container.getAttribute('data-is-touching') === 'true') return;
           
-          // Velocidade aumentada: ~100px por segundo (1.6px por frame em 60fps)
-          const speed = 0.1; // px per ms
+          // Velocidade aumentada em 30%: ~130px por segundo
+          const speed = 0.13; // px per ms
           const increment = speed * deltaTime;
           
           container.scrollLeft += increment;
