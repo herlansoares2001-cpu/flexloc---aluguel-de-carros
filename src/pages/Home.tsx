@@ -228,8 +228,7 @@ export default function Home() {
             poster="/images/hero.png"
             disableRemotePlayback 
             onEnded={() => setIsVideoPlaying(false)}
-            style={{ transform: 'translate3d(0, 0, 0) scale(1.01)', willChange: 'transform', backfaceVisibility: 'hidden', imageRendering: '-webkit-optimize-contrast', WebkitFontSmoothing: 'antialiased' } as React.CSSProperties} 
-            className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ease-in-out ${isVideoPlaying ? 'opacity-100' : 'opacity-0'}`}
+            className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ease-in-out hero-video-render ${isVideoPlaying ? 'opacity-100' : 'opacity-0'}`}
           >
             <source src="/images/videos/Vídeo background.mp4" type="video/mp4" />
           </video>
@@ -290,12 +289,12 @@ export default function Home() {
                     <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest ml-4 opacity-70" id="tipo-contrato-label">Tipo de Contrato</label>
                     <div className="flex p-1.5 bg-black/40 rounded-2xl border border-white/5 backdrop-blur-md shadow-inner" role="group" aria-labelledby="tipo-contrato-label">
                       <button type="button" onClick={() => handleTipoChange('app')}
-                        aria-pressed={tipo === 'app' ? "true" : "false"}
+                        aria-pressed={tipo === 'app' ? 'true' : 'false'}
                         className={`flex-1 py-3 px-2 sm:px-4 rounded-xl text-[10px] sm:text-[11px] uppercase tracking-wider sm:tracking-widest transition-all duration-500 ${tipo === 'app' ? 'font-black bg-primary text-background-dark shadow-xl shadow-primary/20' : 'font-bold text-gray-500 hover:text-white'}`}>
                         Motorista de App
                       </button>
                       <button type="button" onClick={() => handleTipoChange('normal')}
-                        aria-pressed={tipo === 'normal' ? "true" : "false"}
+                        aria-pressed={tipo === 'normal' ? 'true' : 'false'}
                         className={`flex-1 py-3 px-2 sm:px-4 rounded-xl text-[10px] sm:text-[11px] uppercase tracking-wider sm:tracking-widest transition-all duration-500 ${tipo === 'normal' ? 'font-black bg-primary text-background-dark shadow-xl shadow-primary/20' : 'font-bold text-gray-500 hover:text-white'}`}>
                         Pessoa Física
                       </button>
@@ -666,8 +665,7 @@ export default function Home() {
                     <div className="absolute -top-10 left-1/2 -translate-x-1/2 text-[120px] font-bold text-white opacity-[0.03] select-none pointer-events-none leading-none">{step.num}</div>
                     <div className="w-4 h-4 rounded-full bg-background-dark border-2 border-primary mb-8 relative z-20 shadow-[0_0_15px_rgba(230,197,25,0.3)]"></div>
                     <div className="w-full h-48 bg-white/[0.02] rounded-lg mb-8 flex items-center justify-center border border-white/5 backdrop-blur-sm group-hover:border-white/10 transition-colors duration-500">
-                        <span className="material-symbols-outlined text-white/30 leading-none group-hover:text-primary transition-all duration-500" 
-                              style={{ fontSize: '56px', fontVariationSettings: "'wght' 300, 'opsz' 48" }}>
+                        <span className="material-symbols-outlined text-white/30 leading-none group-hover:text-primary transition-all duration-500 step-icon-large">
                           {step.icon}
                         </span>
                     </div>

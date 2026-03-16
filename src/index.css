@@ -147,6 +147,19 @@ input::placeholder {
     transform: scale(1.25) translateY(-10px);
 }
 
+.hero-video-render {
+    transform: translate3d(0, 0, 0) scale(1.01);
+    will-change: transform;
+    backface-visibility: hidden;
+    image-rendering: -webkit-optimize-contrast;
+    -webkit-font-smoothing: antialiased;
+}
+
+.step-icon-large {
+    font-size: 56px !important;
+    font-variation-settings: 'wght' 300, 'opsz' 48 !important;
+}
+
 .glow-text-green, .glow-green {
     text-shadow: 0 0 10px rgba(52, 211, 153, 0.5);
 }
