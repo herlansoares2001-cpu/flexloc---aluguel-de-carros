@@ -113,8 +113,8 @@ export default function Home() {
         containers.forEach(container => {
           if (container.getAttribute('data-is-touching') === 'true') return;
           
-          // Velocidade: ~60px por segundo (1px por frame em 60fps)
-          const speed = 0.06; // px per ms
+          // Velocidade aumentada: ~100px por segundo (1.6px por frame em 60fps)
+          const speed = 0.1; // px per ms
           const increment = speed * deltaTime;
           
           container.scrollLeft += increment;
@@ -140,10 +140,10 @@ export default function Home() {
 
     const handleTouchEnd = (e: any) => {
       const container = e.currentTarget;
-      // Retoma após 3 segundos de inatividade
+      // Retoma mais rápido: após 1.5 segundos de inatividade
       const timeoutId = window.setTimeout(() => {
         container.setAttribute('data-is-touching', 'false');
-      }, 3000);
+      }, 1500);
       container.setAttribute('data-resume-timeout', timeoutId.toString());
     };
 
