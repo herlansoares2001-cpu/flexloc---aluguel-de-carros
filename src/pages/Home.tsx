@@ -179,8 +179,17 @@ export default function Home() {
   };
 
   const goToBook = async () => {
-    if (!validateDates(timeStart, timeEnd)) {
-      return;
+    // Para motorista de app, só precisa da data de retirada
+    if (plan === 'motorista') {
+      if (!dateStart) {
+        setError('Selecione a data de retirada.');
+        return;
+      }
+      setError('');
+    } else {
+      if (!validateDates(timeStart, timeEnd)) {
+        return;
+      }
     }
 
     try {
@@ -192,9 +201,9 @@ export default function Home() {
         body: JSON.stringify({
           plan,
           dateStart,
-          dateEnd,
+          dateEnd: plan === 'motorista' ? '' : dateEnd,
           timeStart,
-          timeEnd
+          timeEnd: plan === 'motorista' ? '' : timeEnd
         }),
       });
 
@@ -207,7 +216,7 @@ export default function Home() {
       console.warn('Backend indisponível, seguindo com fallback da validação do frontend.', err);
     }
 
-    const params = new URLSearchParams({ loc: location, tipo, plan, dateStart, dateEnd, timeStart, timeEnd });
+    const params = new URLSearchParams({ loc: location, tipo, plan, dateStart, dateEnd: plan === 'motorista' ? '' : dateEnd, timeStart, timeEnd: plan === 'motorista' ? '' : timeEnd });
     navigate(`/book?${params.toString()}`);
   };
 
@@ -344,7 +353,7 @@ export default function Home() {
                           <label htmlFor="date-start" className="text-[10px] font-bold text-gray-500 uppercase tracking-widest ml-4 opacity-70 flex justify-between pr-2">
                             Retirada
                             {tipo === 'app' ? (
-                              <span className="text-primary animate-pulse">Min. 7d</span>
+                              <span className="text-primary animate-pulse">Contrato 90d</span>
                             ) : (
                               <span className="text-primary animate-pulse">Min. 3d</span>
                             )}
@@ -390,59 +399,61 @@ export default function Home() {
                         </div>
                       </div>
 
-                      {/* Devolução */}
-                      <div className="flex flex-col sm:grid sm:grid-cols-5 gap-4 sm:gap-2 sm:items-end">
-                        <div className="w-full sm:col-span-3 space-y-2">
-                          <label htmlFor="date-end" className="text-[10px] font-bold text-gray-500 uppercase tracking-widest ml-4 opacity-70 flex justify-between pr-2">
-                            Devolução
-                            {tipo === 'app' && <span className="text-primary">Ciclo Semanal</span>}
-                          </label>
-                          <div className="relative group/field">
-                            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                              <span className="material-symbols-outlined text-primary text-lg font-light">event_repeat</span>
-                            </div>
-                            <input ref={dateEndRef}
-                              id="date-end"
-                              readOnly
-                              className="block w-full pl-11 pr-2 py-4 bg-white/[0.05] border border-white/10 hover:border-primary/50 hover:bg-white/[0.08] rounded-2xl text-white placeholder-gray-500 focus:outline-none transition-all text-sm sm:text-xs font-bold tracking-wide cursor-pointer"
-                              type="text" placeholder="Escolha a data" />
-                          </div>
-                        </div>
-                        <div className="w-full sm:col-span-2 space-y-2 relative">
-                          <div className="relative w-full">
-                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10">
-                              <span className={`material-symbols-outlined text-lg font-light ${isTimeEndOpen ? 'text-primary' : 'text-gray-500'}`}>schedule</span>
-                            </div>
-                            <button type="button" id="time-end-btn" aria-label="Hora de Devolução" onClick={() => setIsTimeEndOpen(!isTimeEndOpen)}
-                              className={`block w-full text-left pl-10 pr-8 py-4 bg-white/[0.03] border hover:border-primary/50 hover:bg-white/[0.08] rounded-2xl text-white focus:outline-none transition-all text-sm sm:text-xs font-bold tracking-wide cursor-pointer relative z-0 ${isTimeEndOpen ? 'border-primary/50 ring-1 ring-primary/50' : 'border-white/5'}`}>
-                              <span>{timeEnd}</span>
-                            </button>
-                            <div className={`absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none z-10 text-gray-500 transition-transform duration-300 ${isTimeEndOpen ? 'rotate-180' : ''}`}>
-                              <span className="material-symbols-outlined font-light text-xl">expand_more</span>
-                            </div>
-                            {isTimeEndOpen && (
-                              <div className="absolute z-50 w-full mt-2 bg-black/80 border border-white/10 rounded-2xl shadow-2xl backdrop-blur-2xl max-h-48 overflow-y-auto custom-scrollbar">
-                                <ul className="p-2 text-sm font-medium text-gray-400 flex flex-col gap-1">
-                                  {endTimeOptions.map(t => (
-                                    <li key={t}>
-                                      <button type="button" onClick={() => { setTimeEnd(t); setIsTimeEndOpen(false); }}
-                                        className="w-full text-center px-2 py-2 hover:text-primary hover:bg-white/5 rounded-lg transition-all duration-150 cursor-pointer">
-                                        {t}
-                                      </button>
-                                    </li>
-                                  ))}
-                                </ul>
+                      {/* Devolução - Only shown for PF */}
+                      {tipo !== 'app' && (
+                        <div className="flex flex-col sm:grid sm:grid-cols-5 gap-4 sm:gap-2 sm:items-end">
+                          <div className="w-full sm:col-span-3 space-y-2">
+                            <label htmlFor="date-end" className="text-[10px] font-bold text-gray-500 uppercase tracking-widest ml-4 opacity-70 flex justify-between pr-2">
+                              Devolução
+                              {tipo === 'app' && <span className="text-primary">Ciclo Semanal</span>}
+                            </label>
+                            <div className="relative group/field">
+                              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                <span className="material-symbols-outlined text-primary text-lg font-light">event_repeat</span>
                               </div>
-                            )}
+                              <input ref={dateEndRef}
+                                id="date-end"
+                                readOnly
+                                className="block w-full pl-11 pr-2 py-4 bg-white/[0.05] border border-white/10 hover:border-primary/50 hover:bg-white/[0.08] rounded-2xl text-white placeholder-gray-500 focus:outline-none transition-all text-sm sm:text-xs font-bold tracking-wide cursor-pointer"
+                                type="text" placeholder="Escolha a data" />
+                            </div>
+                          </div>
+                          <div className="w-full sm:col-span-2 space-y-2 relative">
+                            <div className="relative w-full">
+                              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10">
+                                <span className={`material-symbols-outlined text-lg font-light ${isTimeEndOpen ? 'text-primary' : 'text-gray-500'}`}>schedule</span>
+                              </div>
+                              <button type="button" id="time-end-btn" aria-label="Hora de Devolução" onClick={() => setIsTimeEndOpen(!isTimeEndOpen)}
+                                className={`block w-full text-left pl-10 pr-8 py-4 bg-white/[0.03] border hover:border-primary/50 hover:bg-white/[0.08] rounded-2xl text-white focus:outline-none transition-all text-sm sm:text-xs font-bold tracking-wide cursor-pointer relative z-0 ${isTimeEndOpen ? 'border-primary/50 ring-1 ring-primary/50' : 'border-white/5'}`}>
+                                <span>{timeEnd}</span>
+                              </button>
+                              <div className={`absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none z-10 text-gray-500 transition-transform duration-300 ${isTimeEndOpen ? 'rotate-180' : ''}`}>
+                                <span className="material-symbols-outlined font-light text-xl">expand_more</span>
+                              </div>
+                              {isTimeEndOpen && (
+                                <div className="absolute z-50 w-full mt-2 bg-black/80 border border-white/10 rounded-2xl shadow-2xl backdrop-blur-2xl max-h-48 overflow-y-auto custom-scrollbar">
+                                  <ul className="p-2 text-sm font-medium text-gray-400 flex flex-col gap-1">
+                                    {endTimeOptions.map(t => (
+                                      <li key={t}>
+                                        <button type="button" onClick={() => { setTimeEnd(t); setIsTimeEndOpen(false); }}
+                                          className="w-full text-center px-2 py-2 hover:text-primary hover:bg-white/5 rounded-lg transition-all duration-150 cursor-pointer">
+                                          {t}
+                                        </button>
+                                      </li>
+                                    ))}
+                                  </ul>
+                                </div>
+                              )}
+                            </div>
                           </div>
                         </div>
-                      </div>
+                      )}
                     </div>
 
                     <button onClick={goToBook}
                       className="w-full mt-4 py-5 bg-primary text-background-dark text-sm font-black uppercase tracking-[0.25em] rounded-2xl hover:bg-white hover:text-black transition-all duration-500 shadow-[0_20px_40px_rgba(255,217,0,0.3)] flex items-center justify-center gap-3 group active:scale-[0.97]">
-                      <span>Alugar Agora</span>
-                      <span className="material-symbols-outlined text-xl group-hover:translate-x-2 transition-transform">arrow_right_alt</span>
+                      <span>{tipo === 'app' ? 'Consultar Disponibilidade' : 'Alugar Agora'}</span>
+                      <span className="material-symbols-outlined text-xl group-hover:translate-x-2 transition-transform">{tipo === 'app' ? 'search' : 'arrow_right_alt'}</span>
                     </button>
                     
                     {error && (
@@ -455,7 +466,7 @@ export default function Home() {
                     
                     <p className="text-xs text-center text-gray-500 mt-2">
                       {tipo === 'app' 
-                        ? "Motoristas de aplicativo alugam por períodos semanais (mínimo 7 dias)."
+                        ? "O contrato para motoristas de aplicativo tem período mínimo de 90 dias."
                         : "Locação mínima de 3 dias."}
                     </p>
                   </div>
@@ -532,8 +543,8 @@ export default function Home() {
                    car.category === 'Sedan' ? 'Mais espaço, tecnologia e performance para suas viagens ou trabalho em categorias superiores.' :
                    'Ideal para quem busca baixo consumo e agilidade no trânsito urbano. Limite de 600km/semana.'}
                 </p>
-                <Link to={`/book?carId=${car.id}&plan=${plan}&loc=${location}&dateStart=${dateStart}&dateEnd=${dateEnd}&timeStart=${timeStart}&timeEnd=${timeEnd}`} className="w-full bg-white text-black py-4 rounded-lg text-sm font-bold text-center uppercase tracking-widest transition-all duration-300 btn-glow hover:bg-primary inline-block">
-                  Reservar Agora
+                <Link to={`/book?carId=${car.id}&plan=${plan}&loc=${location}&dateStart=${dateStart}${plan === 'motorista' ? '' : `&dateEnd=${dateEnd}`}&timeStart=${timeStart}${plan === 'motorista' ? '' : `&timeEnd=${timeEnd}`}`} className="w-full bg-white text-black py-4 rounded-lg text-sm font-bold text-center uppercase tracking-widest transition-all duration-300 btn-glow hover:bg-primary inline-block">
+                  {plan === 'motorista' ? 'Consultar Disponibilidade' : 'Reservar Agora'}
                 </Link>
               </div>
             </div>
@@ -759,15 +770,7 @@ export default function Home() {
                         </p>
                     </div>
                     <div className="grid sm:grid-cols-2 gap-4 mt-8">
-                        <div className="card-glass p-5 rounded-2xl flex items-center gap-4 group hover:border-primary/30 transition-all">
-                            <div className="w-12 h-12 flex items-center justify-center rounded-xl bg-primary/10 text-primary group-hover:scale-110 transition-transform">
-                                <span className="material-symbols-outlined font-light">location_on</span>
-                            </div>
-                            <div>
-                                <p className="text-white font-bold text-lg">Duas Unidades</p>
-                                <p className="text-gray-500 text-sm font-sans">Feira e Salvador</p>
-                            </div>
-                        </div>
+
                         <div className="card-glass p-5 rounded-2xl flex items-center gap-4 group hover:border-primary/30 transition-all">
                             <div className="w-12 h-12 flex items-center justify-center rounded-xl bg-primary/10 text-primary group-hover:scale-110 transition-transform">
                                 <span className="material-symbols-outlined font-light">groups</span>

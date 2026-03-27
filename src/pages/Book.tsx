@@ -182,15 +182,24 @@ export default function Book() {
   const totals = calculateTotals();
 
   const handleConfirm = async () => {
-    if (!validateDates(timeStart, timeEnd)) {
-      return;
+    // Para motorista de app, só valida data de retirada
+    if (plan === 'motorista') {
+      if (!dateStart) {
+        setError('Selecione a data de retirada.');
+        return;
+      }
+      setError('');
+    } else {
+      if (!validateDates(timeStart, timeEnd)) {
+        return;
+      }
     }
 
     try {
       const response = await fetch('/api/validate-reservation', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ plan, dateStart, dateEnd, timeStart, timeEnd }),
+        body: JSON.stringify({ plan, dateStart, dateEnd: plan === 'motorista' ? '' : dateEnd, timeStart, timeEnd: plan === 'motorista' ? '' : timeEnd }),
       });
 
       if (!response.ok) {
@@ -200,7 +209,6 @@ export default function Book() {
       }
     } catch (err) {
       console.warn('Backend indisponível, utilizando fallback de validação do frontend.', err);
-      // Fallback seguro: O frontend já validou a integridade dos dados, podemos prosseguir com a reserva
     }
 
     const locName = location === 'fsa' ? 'Feira de Santana, BA' : 'Salvador, BA';
@@ -219,12 +227,29 @@ export default function Book() {
 
     const caucao = getCaucao(currentCar);
 
-    const message = `Olá! Gostaria de confirmar uma reserva:
+    let message: string;
+
+    if (plan === 'motorista') {
+      const weeklyPrice = getCarPrice(currentCar);
+      message = `Olá! Gostaria de consultar a disponibilidade:
+
+*Veículo:* ${currentCar.name}
+*Local:* ${locName}
+*Plano:* ${planName} (Contrato mín. 90 dias)
+*Franquia:* ${franchiseName}
+*Valor Semanal:* R$ ${weeklyPrice?.toLocaleString('pt-BR') || '-'}
+*Data de Retirada Desejada:* ${formattedStart} às ${timeStart}
+*Proteção:* Inclusa
+*Caução:* R$ ${caucao.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+
+Aguardo retorno sobre a disponibilidade!`;
+    } else {
+      message = `Olá! Gostaria de confirmar uma reserva:
 
 *Veículo:* ${currentCar.name}
 *Local:* ${locName}
 *Plano:* ${planName}
-${plan === 'motorista' ? `*Franquia:* ${franchiseName}\n` : ''}*Retirada:* ${formattedStart} às ${timeStart}
+*Retirada:* ${formattedStart} às ${timeStart}
 *Devolução:* ${formattedEnd} às ${timeEnd}
 *Proteção:* Inclusa
 *Caução:* R$ ${caucao.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
@@ -232,6 +257,7 @@ ${plan === 'motorista' ? `*Franquia:* ${franchiseName}\n` : ''}*Retirada:* ${for
 *Total Estimado:* R$ ${totals.total}
 
 Aguardo retorno para finalizar!`;
+    }
 
     const encodedMessage = encodeURIComponent(message);
     const whatsappUrl = `https://wa.me/5575981333333?text=${encodedMessage}`;
@@ -384,7 +410,7 @@ Aguardo retorno para finalizar!`;
                       ))}
                     </div>
                     <button className={`w-full py-3 rounded-xl text-xs font-bold uppercase tracking-widest transition-all ${isSelected ? 'bg-primary text-black' : 'bg-white/5 text-white hover:bg-white/10'}`}>
-                      {isSelected ? 'Selecionado' : 'Reservar Agora'}
+                      {isSelected ? 'Selecionado' : (plan === 'motorista' ? 'Consultar Disponibilidade' : 'Reservar Agora')}
                     </button>
                   </div>
                 );
@@ -478,12 +504,12 @@ Aguardo retorno para finalizar!`;
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
+              <div className={`grid ${plan === 'motorista' ? 'grid-cols-2' : 'grid-cols-2'} gap-4`}>
+                <div className={`space-y-2 ${plan === 'motorista' ? 'col-span-2 sm:col-span-1' : ''}`}>
                   <label htmlFor="date-start" className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] ml-1 flex justify-between">
-                    Início
+                    {plan === 'motorista' ? 'Data de Retirada' : 'Início'}
                     {plan === 'motorista' ? (
-                      <span className="text-[9px] font-black text-primary animate-pulse">Min. 7d</span>
+                      <span className="text-[9px] font-black text-primary animate-pulse">Contrato 90d</span>
                     ) : (
                       <span className="text-[9px] font-black text-primary animate-pulse">Min. 3d</span>
                     )}
@@ -496,7 +522,7 @@ Aguardo retorno para finalizar!`;
                       className="w-full pl-9 pr-2 py-3 bg-white/[0.03] border border-white/10 rounded-xl text-xs text-white cursor-pointer font-bold focus:border-primary/50 transition-all" />
                   </div>
                 </div>
-                <div className="space-y-2 relative">
+                <div className={`space-y-2 ${plan === 'motorista' ? 'col-span-2' : ''}`}>
                   <label htmlFor="time-start-btn" className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] ml-1">Hora</label>
                   <div className="relative group">
                     <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none text-gray-500 transition-colors group-hover:text-primary">
@@ -525,48 +551,52 @@ Aguardo retorno para finalizar!`;
                     )}
                   </div>
                 </div>
-                <div className="space-y-2">
-                  <label htmlFor="date-end" className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] ml-1 flex justify-between">
-                    Fim
-                    {plan === 'motorista' && <span className="text-[9px] font-black text-primary">Ciclo Semanal</span>}
-                  </label>
-                  <div className="relative group">
-                    <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none text-gray-500 transition-colors group-hover:text-primary">
-                      <span className="material-symbols-outlined text-[16px]">event_repeat</span>
-                    </div>
-                    <input ref={dateEndRef} id="date-end" type="text" placeholder="dd/mm/aa" readOnly
-                      className="w-full pl-9 pr-2 py-3 bg-white/[0.03] border border-white/10 rounded-xl text-xs text-white cursor-pointer font-bold focus:border-primary/50 transition-all" />
-                  </div>
-                </div>
-                <div className="space-y-2 relative">
-                  <label htmlFor="time-end-btn" className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] ml-1">Hora</label>
-                  <div className="relative group">
-                    <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none text-gray-500 transition-colors group-hover:text-primary">
-                      <span className="material-symbols-outlined text-[16px]">schedule</span>
-                    </div>
-                    <button id="time-end-btn" aria-label="Hora de Fim" onClick={() => setIsTimeEndOpen(!isTimeEndOpen)}
-                      className="w-full text-left pl-9 pr-8 py-3 bg-white/[0.03] border border-white/10 rounded-xl text-xs text-white font-bold transition-all focus:border-primary/50">
-                      <span>{timeEnd}</span>
-                    </button>
-                    <div className="absolute inset-y-0 right-2 flex items-center pointer-events-none text-gray-500">
-                      <span className="material-symbols-outlined text-[18px]">expand_more</span>
-                    </div>
-                    {isTimeEndOpen && (
-                      <div className="absolute z-50 w-full mt-2 bg-[#0A0A0A] border border-white/10 rounded-2xl shadow-2xl max-h-48 overflow-y-auto custom-scrollbar">
-                        <ul className="p-2 text-sm font-medium text-gray-400 flex flex-col gap-1">
-                          {endTimeOptions.map(t => (
-                            <li key={t}>
-                              <button type="button" onClick={() => { setTimeEnd(t); setIsTimeEndOpen(false); }}
-                                className="w-full text-center px-2 py-2 hover:text-primary hover:bg-white/5 rounded-lg transition-all duration-150 cursor-pointer">
-                                {t}
-                              </button>
-                            </li>
-                          ))}
-                        </ul>
+                {plan !== 'motorista' && (
+                  <>
+                    <div className="space-y-2">
+                      <label htmlFor="date-end" className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] ml-1 flex justify-between">
+                        Fim
+                        {plan === 'motorista' && <span className="text-[9px] font-black text-primary">Ciclo Semanal</span>}
+                      </label>
+                      <div className="relative group">
+                        <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none text-gray-500 transition-colors group-hover:text-primary">
+                          <span className="material-symbols-outlined text-[16px]">event_repeat</span>
+                        </div>
+                        <input ref={dateEndRef} id="date-end" type="text" placeholder="dd/mm/aa" readOnly
+                          className="w-full pl-9 pr-2 py-3 bg-white/[0.03] border border-white/10 rounded-xl text-xs text-white cursor-pointer font-bold focus:border-primary/50 transition-all" />
                       </div>
-                    )}
-                  </div>
-                </div>
+                    </div>
+                    <div className="space-y-2 relative">
+                      <label htmlFor="time-end-btn" className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] ml-1">Hora</label>
+                      <div className="relative group">
+                        <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none text-gray-500 transition-colors group-hover:text-primary">
+                          <span className="material-symbols-outlined text-[16px]">schedule</span>
+                        </div>
+                        <button id="time-end-btn" aria-label="Hora de Fim" onClick={() => setIsTimeEndOpen(!isTimeEndOpen)}
+                          className="w-full text-left pl-9 pr-8 py-3 bg-white/[0.03] border border-white/10 rounded-xl text-xs text-white font-bold transition-all focus:border-primary/50">
+                          <span>{timeEnd}</span>
+                        </button>
+                        <div className="absolute inset-y-0 right-2 flex items-center pointer-events-none text-gray-500">
+                          <span className="material-symbols-outlined text-[18px]">expand_more</span>
+                        </div>
+                        {isTimeEndOpen && (
+                          <div className="absolute z-50 w-full mt-2 bg-[#0A0A0A] border border-white/10 rounded-2xl shadow-2xl max-h-48 overflow-y-auto custom-scrollbar">
+                            <ul className="p-2 text-sm font-medium text-gray-400 flex flex-col gap-1">
+                              {endTimeOptions.map(t => (
+                                <li key={t}>
+                                  <button type="button" onClick={() => { setTimeEnd(t); setIsTimeEndOpen(false); }}
+                                    className="w-full text-center px-2 py-2 hover:text-primary hover:bg-white/5 rounded-lg transition-all duration-150 cursor-pointer">
+                                    {t}
+                                  </button>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </>
+                )}
               </div>
 
               {plan === 'pf' ? (
@@ -629,36 +659,64 @@ Aguardo retorno para finalizar!`;
 
               <div className="mt-1 pt-3 border-t border-white/5 space-y-2">
                 <div className="space-y-1.5">
-                  <div className="flex justify-between text-[10px] font-semibold tracking-wide">
-                    <span className="text-gray-500 uppercase">Locação ({plan === 'pf' ? `${totals.days} dias` : `${totals.weeks} sem.`})</span>
-                    <span className="text-white">R$ {totals.carTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
-                  </div>
-                  <div className="flex justify-between text-[10px] font-semibold tracking-wide">
-                    <span className="text-gray-500 uppercase">Proteção</span>
-                    <span className="text-emerald-400 font-black uppercase">Inclusa</span>
-                  </div>
-                  <div className="flex justify-between text-[10px] font-semibold tracking-wide">
-                    <span className="text-gray-500 uppercase">Caução (Bloqueio)</span>
-                    <span className="text-white">R$ {(() => {
-                      if (plan === 'pf') return '1.500,00';
-                      if (currentCar.catLabel === 'Black') return '2.500,00';
-                      if (currentCar.catLabel === 'Comfort' || currentCar.catLabel === 'Família') return '2.000,00';
-                      return '1.800,00';
-                    })()}</span>
-                  </div>
-                  <div className="flex justify-between items-center bg-white/[0.03] px-2 py-1.5 rounded-lg border border-white/5">
-                    <span className="text-[9px] font-black uppercase text-gray-500 tracking-wider">Período Total</span>
-                    <span className="summary-badge text-[9px] px-1.5 py-0.5">{plan === 'pf' ? `${totals.weeks} semana(s) (${totals.days} dias)` : `${totals.days} dia(s)`}</span>
-                  </div>
+                  {plan === 'motorista' ? (
+                    <>
+                      <div className="flex justify-between text-[10px] font-semibold tracking-wide">
+                        <span className="text-gray-500 uppercase">Valor Semanal</span>
+                        <span className="text-white">R$ {getCarPrice(currentCar)?.toLocaleString('pt-BR') || '-'}</span>
+                      </div>
+                      <div className="flex justify-between text-[10px] font-semibold tracking-wide">
+                        <span className="text-gray-500 uppercase">Proteção</span>
+                        <span className="text-emerald-400 font-black uppercase">Inclusa</span>
+                      </div>
+                      <div className="flex justify-between text-[10px] font-semibold tracking-wide">
+                        <span className="text-gray-500 uppercase">Caução (Bloqueio)</span>
+                        <span className="text-white">R$ {(() => {
+                          if (currentCar.catLabel === 'Black') return '2.500,00';
+                          if (currentCar.catLabel === 'Comfort' || currentCar.catLabel === 'Família') return '2.000,00';
+                          return '1.800,00';
+                        })()}</span>
+                      </div>
+                      <div className="flex justify-between items-center bg-primary/5 px-2 py-1.5 rounded-lg border border-primary/10">
+                        <span className="text-[9px] font-black uppercase text-gray-500 tracking-wider">Contrato Mínimo</span>
+                        <span className="summary-badge text-[9px] px-1.5 py-0.5">90 dias</span>
+                      </div>
+                      <p className="text-[9px] text-primary/80 font-bold text-center">* Desconto de R$100,00 de pontualidade na semana</p>
+                    </>
+                  ) : (
+                    <>
+                      <div className="flex justify-between text-[10px] font-semibold tracking-wide">
+                        <span className="text-gray-500 uppercase">Locação ({totals.days} dias)</span>
+                        <span className="text-white">R$ {totals.carTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+                      </div>
+                      <div className="flex justify-between text-[10px] font-semibold tracking-wide">
+                        <span className="text-gray-500 uppercase">Proteção</span>
+                        <span className="text-emerald-400 font-black uppercase">Inclusa</span>
+                      </div>
+                      <div className="flex justify-between text-[10px] font-semibold tracking-wide">
+                        <span className="text-gray-500 uppercase">Caução (Bloqueio)</span>
+                        <span className="text-white">R$ 1.500,00</span>
+                      </div>
+                      <div className="flex justify-between items-center bg-white/[0.03] px-2 py-1.5 rounded-lg border border-white/5">
+                        <span className="text-[9px] font-black uppercase text-gray-500 tracking-wider">Período Total</span>
+                        <span className="summary-badge text-[9px] px-1.5 py-0.5">{totals.weeks} semana(s) ({totals.days} dias)</span>
+                      </div>
+                    </>
+                  )}
                 </div>
 
                 <div className="flex justify-between items-baseline pt-1">
                   <div className="flex flex-col">
-                    <span className="text-[9px] font-black text-gray-500 uppercase tracking-[0.2em]">Total Estimado</span>
-                    <span className="text-[8px] text-primary/60 font-medium">Impostos inclusos</span>
+                    <span className="text-[9px] font-black text-gray-500 uppercase tracking-[0.2em]">{plan === 'motorista' ? 'Valor Semanal' : 'Total Estimado'}</span>
+                    <span className="text-[8px] text-primary/60 font-medium">{plan === 'motorista' ? 'Contrato mín. 90 dias' : 'Impostos inclusos'}</span>
                   </div>
-                  <div className="text-right">
-                    <span className="text-2xl font-black text-white tracking-tighter transition-all duration-300">R$ {totals.total.toLocaleString('pt-BR')}</span>
+                  <div className="text-right flex flex-col items-end">
+                    <span className="text-2xl font-black text-white tracking-tighter transition-all duration-300">
+                      R$ {plan === 'motorista' 
+                        ? (getCarPrice(currentCar)?.toLocaleString('pt-BR') || '-') 
+                        : totals.total.toLocaleString('pt-BR')}
+                    </span>
+                    <span className="text-[10px] text-gray-500 uppercase font-bold">{plan === 'motorista' ? 'Por semana' : ''}</span>
                   </div>
                 </div>
 
@@ -671,8 +729,8 @@ Aguardo retorno para finalizar!`;
                 )}
 
                 <button onClick={handleConfirm} className="btn-confirm w-full py-3 rounded-xl flex items-center justify-center gap-2 active:scale-95 text-xs">
-                  <span>Confirmar Reserva</span>
-                  <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
+                  <span>{plan === 'motorista' ? 'Consultar Disponibilidade' : 'Confirmar Reserva'}</span>
+                  <span className="material-symbols-outlined text-[18px]">{plan === 'motorista' ? 'search' : 'arrow_forward'}</span>
                 </button>
               </div>
             </div>

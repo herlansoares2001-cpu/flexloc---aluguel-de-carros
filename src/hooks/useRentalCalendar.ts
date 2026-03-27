@@ -35,86 +35,75 @@ export function useRentalCalendar(plan: 'motorista' | 'pf', defaultStart = '', d
   }, [dateStart, dateEnd]);
 
   const updateEndDateConstraints = (start: Date | undefined, currentPlan: 'motorista' | 'pf') => {
-    if (!fpEnd.current) return;
-
     const startMidnight = start ? new Date(start.getFullYear(), start.getMonth(), start.getDate()) : null;
     const now = new Date();
     const nowMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     
-    const minDays = currentPlan === 'motorista' ? 7 : 3;
+    const minDays = currentPlan === 'motorista' ? 90 : 3;
     const minEnd = startMidnight 
       ? new Date(startMidnight.getTime() + minDays * 86400000) 
       : new Date(nowMidnight.getTime() + minDays * 86400000);
     
-    try {
-      if (typeof fpEnd.current.set === 'function') {
-        fpEnd.current.set('minDate', minEnd);
-        
-        const disableFunctions: Array<(date: Date) => boolean> = [
-          function(date: Date) { return date.getDay() === 0; }
-        ];
+    if (fpEnd.current) {
+      try {
+        if (typeof fpEnd.current.set === 'function') {
+          fpEnd.current.set('minDate', minEnd);
+          
+          const disableFunctions: Array<(date: Date) => boolean> = [
+            function(date: Date) { return date.getDay() === 0; }
+          ];
 
-        if (currentPlan === 'motorista') {
-          if (startMidnight) {
-            disableFunctions.push(function(date: Date) {
-              const dateMidnight = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-              const diffDays = Math.round((dateMidnight.getTime() - startMidnight.getTime()) / 86400000);
-              const isCycleOf7 = diffDays % 7 === 0;
-              return diffDays < 7 || !isCycleOf7;
-            });
-          } else {
-            disableFunctions.push(function(date: Date) {
-              const dateMidnight = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-              const diffDays = Math.round((dateMidnight.getTime() - nowMidnight.getTime()) / 86400000) + 1;
-              return diffDays < 7;
-            });
+          if (currentPlan === 'motorista' && startMidnight) {
+             disableFunctions.push(function(date: Date) {
+               const dateMidnight = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+               const diffDays = Math.round((dateMidnight.getTime() - startMidnight.getTime()) / 86400000);
+               return diffDays < 90;
+             });
           }
-        }
 
-        fpEnd.current.set('disable', disableFunctions);
+          fpEnd.current.set('disable', disableFunctions);
+        }
+      } catch (e) {
+        console.error('Error setting constraints', e);
       }
-    } catch (e) {
-      console.error('Error setting constraints', e);
     }
 
-    const currentEnd = fpEnd.current.selectedDates[0];
+    const currentEnd = fpEnd.current ? fpEnd.current.selectedDates[0] : (dateEndValue.current ? new Date(dateEndValue.current + 'T12:00:00') : null);
     const currentEndMidnight = currentEnd ? new Date(currentEnd.getFullYear(), currentEnd.getMonth(), currentEnd.getDate()) : null;
 
-    if (startMidnight) {
+    if (startMidnight && currentPlan !== 'motorista') {
       let isInvalid = !currentEndMidnight;
       let suggestedDays = minDays;
 
       if (currentEndMidnight) {
-        // CORREÇÃO: Lógica inclusiva (+1)
         const diffDays = Math.round((currentEndMidnight.getTime() - startMidnight.getTime()) / 86400000) + 1;
         
-        if (currentPlan === 'motorista') {
-          if (diffDays < 7 || diffDays % 7 !== 0) {
-            isInvalid = true;
-            suggestedDays = 7;
-          }
-        } else {
-          if (diffDays < 3) {
-            isInvalid = true;
-            suggestedDays = 3;
-          }
+        if (diffDays < 3) {
+          isInvalid = true;
+          suggestedDays = 3;
         }
       }
 
       if (isInvalid) {
-        let suggestedEnd = new Date(startMidnight.getTime() + suggestedDays * 86400000);
+        let suggestedEnd = new Date(startMidnight.getTime() + (suggestedDays - 1) * 86400000);
         
         // Se a sugestão cair no domingo, avançar para segunda
         if (suggestedEnd.getDay() === 0) {
             suggestedEnd = new Date(suggestedEnd.getTime() + 86400000);
         }
 
-        try {
-          if (typeof fpEnd.current.setDate === 'function') {
-            fpEnd.current.setDate(suggestedEnd, true);
+        if (fpEnd.current) {
+          try {
+            if (typeof fpEnd.current.setDate === 'function') {
+              fpEnd.current.setDate(suggestedEnd, true);
+            }
+          } catch (e) {
+            console.error('Error setting date', e);
           }
-        } catch (e) {
-          console.error('Error setting date', e);
+        } else {
+          // Fallback manual se o flatpickr não estiver montado
+          const formatted = `${suggestedEnd.getFullYear()}-${String(suggestedEnd.getMonth() + 1).padStart(2, '0')}-${String(suggestedEnd.getDate()).padStart(2, '0')}`;
+          setDateEnd(formatted);
         }
       }
     }
@@ -137,7 +126,7 @@ export function useRentalCalendar(plan: 'motorista' | 'pf', defaultStart = '', d
             return date.getDay() === 0;
           }
         ],
-        defaultDate: defaultStart ? new Date(defaultStart + 'T12:00:00') : undefined,
+        defaultDate: dateStartValue.current ? new Date(dateStartValue.current + 'T12:00:00') : (defaultStart ? new Date(defaultStart + 'T12:00:00') : undefined),
         onChange: (selectedDates) => {
           if (selectedDates.length > 0) {
             const d = selectedDates[0];
@@ -183,7 +172,7 @@ export function useRentalCalendar(plan: 'motorista' | 'pf', defaultStart = '', d
             return date.getDay() === 0;
           }
         ],
-        defaultDate: defaultEnd ? new Date(defaultEnd + 'T12:00:00') : undefined,
+        defaultDate: dateEndValue.current ? new Date(dateEndValue.current + 'T12:00:00') : (defaultEnd ? new Date(defaultEnd + 'T12:00:00') : undefined),
         onChange: (selectedDates) => {
           if (selectedDates.length > 0) {
             const d = selectedDates[0];
@@ -233,7 +222,7 @@ export function useRentalCalendar(plan: 'motorista' | 'pf', defaultStart = '', d
         fpEnd.current = null;
       }
     };
-  }, []);
+  }, [plan]); // Adicionado plan como dependência para reinicializar quando campos surgirem/sumirem
 
   useEffect(() => {
     const start = fpStart.current?.selectedDates[0];
@@ -241,12 +230,13 @@ export function useRentalCalendar(plan: 'motorista' | 'pf', defaultStart = '', d
   }, [plan]);
 
   const validateDates = (timeStart?: string, timeEnd?: string) => {
+    // Para motorista de app, a validação não precisa de dateEnd
     const result = validateRental({
       plan: planRef.current,
       dateStart,
-      dateEnd,
+      dateEnd: planRef.current === 'motorista' ? '' : dateEnd,
       timeStart,
-      timeEnd
+      timeEnd: planRef.current === 'motorista' ? undefined : timeEnd
     });
 
     if (!result.isValid) {

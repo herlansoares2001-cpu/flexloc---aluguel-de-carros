@@ -14,6 +14,35 @@ export interface ValidationResult {
 export function validateRental(params: RentalValidationParams): ValidationResult {
   const { plan, dateStart, dateEnd, timeStart, timeEnd } = params;
 
+  // Para motorista de app: contrato mínimo de 90 dias, só precisa da data de retirada
+  if (plan === 'motorista') {
+    if (!dateStart) {
+      return { isValid: false, error: 'Por favor, selecione a data de retirada.' };
+    }
+
+    const start = new Date(dateStart + 'T12:00:00');
+
+    if (isNaN(start.getTime())) {
+      return { isValid: false, error: 'Data de retirada inválida.' };
+    }
+
+    // Bloqueio aos Domingos
+    if (start.getDay() === 0) {
+      return { isValid: false, error: 'A locadora não funciona aos domingos. Não permitimos retirada nesse dia.' };
+    }
+
+    // Bloqueio de horário aos Sábados
+    if (start.getDay() === 6 && timeStart) {
+      const [hours, minutes] = timeStart.split(':').map(Number);
+      if (hours > 12 || (hours === 12 && minutes > 0)) {
+        return { isValid: false, error: 'Aos sábados, a retirada deve ocorrer até as 12:00.' };
+      }
+    }
+
+    return { isValid: true };
+  }
+
+  // Para pessoa física: validação completa com data de devolução
   if (!dateStart || !dateEnd) {
     return { isValid: false, error: 'Por favor, selecione as datas de retirada e devolução.' };
   }
@@ -51,22 +80,10 @@ export function validateRental(params: RentalValidationParams): ValidationResult
   }
 
   const diffTime = Math.abs(end.getTime() - start.getTime());
-  const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+  const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24)) + 1;
 
-  if (plan === 'motorista') {
-    const isCycleOf7 = diffDays % 7 === 0;
-    
-    if (diffDays < 7) {
-      return { isValid: false, error: 'Motoristas de aplicativo devem alugar no mínimo 7 dias (semanal).' };
-    }
-    
-    if (!isCycleOf7) {
-        return { isValid: false, error: 'O período de locação para motoristas de app deve ser em ciclos de 7 dias (semanal).' };
-    }
-  } else if (plan === 'pf') {
-    if (diffDays < 3) {
-      return { isValid: false, error: 'A locação mínima para pessoa física é de 3 dias.' };
-    }
+  if (diffDays < 3) {
+    return { isValid: false, error: 'A locação mínima para pessoa física é de 3 dias.' };
   }
 
   return { isValid: true };
